@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Planificador Semanal Académico y Personal</title>
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Iconos -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+
+    <!-- Estilos personalizados -->
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="antialiased min-h-screen flex flex-col bg-stone-50 text-stone-700">
+
+    <!-- NAVBAR -->
+    <nav class="bg-white border-b border-stone-200 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
+            <div class="flex items-center">
+                <span class="text-2xl mr-2">📅</span>
+                <h1 class="text-xl font-bold">Mi Organizador Semanal</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button onclick="scrollToSection('schedule')" class="nav-btn">Horario</button>
+                <button onclick="scrollToSection('stats')" class="nav-btn">Balance</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+
+        <!-- INTRO -->
+        <section class="section-card mb-8">
+            <h2 class="section-title">Resumen de tu Rutina</h2>
+            <p class="section-text">
+                Este panel interactivo digitaliza tu horario semanal. Selecciona un bloque para ver sus detalles y usa los filtros para enfocarte en cada categoría.
+            </p>
+        </section>
+
+        <!-- FILTROS -->
+        <div class="flex flex-wrap gap-2 mb-6" id="filters">
+            <button class="filter-btn active" onclick="filterSchedule('all')" data-filter="all">Todo</button>
+            <button class="filter-btn bg-blue-100 text-blue-800" onclick="filterSchedule('academic')">🎓 Académico</button>
+            <button class="filter-btn bg-rose-100 text-rose-800" onclick="filterSchedule('art')">🎭 Arte/Teatro</button>
+            <button class="filter-btn bg-emerald-100 text-emerald-800" onclick="filterSchedule('study')">📚 Estudio</button>
+            <button class="filter-btn bg-orange-100 text-orange-800" onclick="filterSchedule('life')">🧘 Vida</button>
+        </div>
+
+        <!-- GRID + DETALLES -->
+        <section id="schedule" class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+
+            <!-- GRID -->
+            <div class="lg:col-span-2 section-card h-[800px] overflow-hidden flex flex-col">
+                <div class="p-4 border-b bg-stone-50 flex justify-between items-center">
+                    <h3 class="font-semibold"><i class="fas fa-calendar-week mr-2"></i>Vista Semanal</h3>
+                    <span class="text-xs bg-white px-2 py-1 rounded border">Haz clic en un bloque para detalles</span>
+                </div>
+
+                <div class="overflow-auto flex-grow p-4 schedule-scroll">
+                    <div class="grid grid-cols-8 gap-1 min-w-[800px] text-xs">
+                        <div class="header-cell">Hora</div>
+                        <div class="header-day">Domingo</div>
+                        <div class="header-day">Lunes</div>
+                        <div class="header-day">Martes</div>
+                        <div class="header-day">Miércoles</div>
+                        <div class="header-day">Jueves</div>
+                        <div class="header-day">Viernes</div>
+                        <div class="header-day">Sábado</div>
+
+                        <div id="grid-content" class="contents"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANEL DE DETALLES -->
+            <div class="lg:col-span-1 space-y-6">
+                <div id="details-card" class="section-card sticky top-24 p-6">
+                    <div class="flex items-center justify-between mb-4 border-b pb-2">
+                        <h3 class="text-lg font-bold" id="detail-title">Detalles</h3>
+                        <span id="detail-icon" class="text-2xl text-stone-300">👆</span>
+                    </div>
+                    <div id="detail-content">
+                        <p class="text-stone-500 italic text-center py-8">Selecciona un bloque del horario.</p>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- CHART -->
+        <section id="stats" class="section-card p-6 mb-12">
+            <div class="mb-6">
+                <h2 class="section-title">Distribución de Tiempo</h2>
+                <p class="section-text">Visualiza cómo se distribuyen tus categorías semanales.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <canvas id="balanceChart" class="max-w-sm mx-auto"></canvas>
+
+                <ul class="space-y-3">
+                    <li>✔ Bloques intensos de estudio en mañanas.</li>
+                    <li>✔ Teatro el domingo para recarga mental.</li>
+                    <li>✔ Viernes libre para recuperación.</li>
+                </ul>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="py-8 text-center text-stone-500 text-sm">
+        Hecho con ❤️ para mejorar tu productividad
+    </footer>
+
+    <!-- SCRIPTS -->
+    <script src="script.js"></script>
+</body>
+</html>
