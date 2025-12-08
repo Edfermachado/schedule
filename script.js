@@ -1,5 +1,3 @@
-// Glass Modern JS: renders grid or mobile list, bars span full duration, filters, chart, minimize
-
 // =========================
 // CONFIG
 // =========================
@@ -23,7 +21,6 @@ const scheduleData = [
   { day:6, start:"08:30", end:"12:00", title:"Redes I", type:"academic", icon:"🌐" }
 ];
 
-// class names for categories (CSS defined)
 const categoryClass = {
   academic: "bg-academic",
   art: "bg-art",
@@ -31,13 +28,12 @@ const categoryClass = {
   life: "bg-life"
 };
 
-const CELL_HEIGHT = 48; // matches --cell-height in styles (px)
-
+const CELL_HEIGHT = 48;
 let compactMode = false;
 
-// =========================
-// UTIL
-// =========================
+const $ = sel => document.querySelector(sel);
+const $$ = sel => Array.from(document.querySelectorAll(sel));
+
 function toMinutes(h) {
   const [H, M] = h.split(":").map(Number);
   return H * 60 + M;
@@ -46,26 +42,16 @@ function blocksBetween(start, end) {
   return Math.round((toMinutes(end) - toMinutes(start)) / 30);
 }
 
-// safe query
-const $ = sel => document.querySelector(sel);
-const $$ = sel => Array.from(document.querySelectorAll(sel));
-
 // ===================================================
-// MINIMIZE MODE (solo muestra el bloque inicial)
+// MINIMIZE MODE
 // ===================================================
-
 function toggleEmptyRows() {
   compactMode = !compactMode;
-
-  document.getElementById("minimizeBtn").setAttribute("aria-pressed", compactMode);
-  document.getElementById("minimizeIcon").classList.toggle("fa-expand-arrows-alt", !compactMode);
-  document.getElementById("minimizeIcon").classList.toggle("fa-compress-arrows-alt", compactMode);
-
-  // volver a renderizar grid
-  if (window.innerWidth >= 768) generateGrid();
+  $("#minimizeBtn").setAttribute("aria-pressed", compactMode);
+  $("#minimizeIcon").classList.toggle("fa-expand-arrows-alt", !compactMode);
+  $("#minimizeIcon").classList.toggle("fa-compress-arrows-alt", compactMode);
+  if(window.innerWidth>=768) generateGrid();
 }
-
-
 
 // ===================================================
 // GRID MODE (DESKTOP)
@@ -73,304 +59,36 @@ function toggleEmptyRows() {
 function generateGrid() {
   const grid = $("#grid-content");
   grid.innerHTML = "";
-
-  // usado SOLO en modo normal
   const occupied = {};
 
-  hours.forEach((h, rowIndex) => {
-
-    // ---- celda de hora
+  hours.forEach((h,rowIndex)=>{
     const hourCell = document.createElement("div");
-    hourCell.className = "border p-2 font-semibold text-center hour-cell";
-    hourCell.style.height = `${CELL_HEIGHT}px`;
-    hourCell.textContent = h;
+    hourCell.className="border p-2 font-semibold text-center hour-cell";
+    hourCell.style.height=`${CELL_HEIGHT}px`;
+    hourCell.textContent=h;
     grid.appendChild(hourCell);
 
+    for(let d=0;d<7;d++){
+      const key=`${rowIndex}-${d}`;
+      const cell=document.createElement("div");
+      cell.className="border min-h-[40px] relative";
+      cell.style.height=`${CELL_HEIGHT}px`;
 
-    // ---- columnas de días (0–6)
-    for (let d = 0; d < 7; d++) {
-      const key = `${rowIndex}-${d}`;
-      const cell = document.createElement("div");
-      cell.className = "border min-h-[40px] relative";
-      cell.style.height = `${CELL_HEIGHT}px`;
-
-
-      // =======================================================
-      // 🔹 MODO MINIMIZADO — SOLO BLOQUE START
-      // =======================================================
-      if (compactMode) {
-        const item = scheduleData.find(e => e.day === d && e.start === h);
-        if (item) {
-          const bar = document.createElement("div");
-          bar.className = `schedule-item ${categoryClass[item.type]}`;
-          bar.style.height = `${CELL_HEIGHT - 10}px`;
-          bar.style.top = `4px`;
-          bar.style.left = `6px`;
-          bar.style.right = `6px`;
-          bar.style.borderRadius = `12px`;
-          bar.style.display = "flex";
-          bar.style.alignItems = "center";
-
-          bar.innerHTML = `
-            <div class="flex items-center gap-2">
-              <div style="font-size:16px">${item.icon}</div>
-              <div style="font-weight:700; font-size:13px">${item.title}</div>
-            </div>
-          `;
-
-          bar.dataset.title = item.title;
-          bar.dataset.type = item.type;
-          bar.dataset.icon = item.icon;
-          bar.dataset.start = item.start;
-          bar.dataset.end = item.end;
-
+      if(compactMode){
+        const item = scheduleData.find(e=>e.day===d && e.start===h);
+        if(item){
+          const bar = createBar(item,CELL_HEIGHT-10);
           cell.appendChild(bar);
         }
-
         grid.appendChild(cell);
         continue;
       }
 
-
-
-      // =======================================================
-      // 🔹 MODO NORMAL — BARRAS COMPLETAS
-      // =======================================================
-      if (occupied[key]) {
+      if(occupied[key]){
         grid.appendChild(cell);
         continue;
       }
 
-      const item = scheduleData.find(e => e.day === d && e.start === h);
-      if (item) {
-        const blocks = blocksBetween(item.start, item.end);
-        const bar = document.createElement("div");
-
-        bar.className = `schedule-item ${categoryClass[item.type]}`;
-        bar.style.height = `${blocks * CELL_HEIGHT - 8}px`;
-        bar.style.top = `4px`;
-        bar.style.left = `6px`;
-        bar.style.right = `6px`;
-        bar.style.borderRadius = `12px`;
-        bar.style.display = "flex";
-        bar.style.alignItems = "center";
-
-        bar.innerHTML = `
-          <div class="flex items-center gap-3">
-            <div style="font-size:18px">${item.icon}</div>
-            <div>
-              <div style="font-weight:700; font-size:13px">${item.title}</div>
-              <div class="meta" style="font-size:11px; opacity:.85">${item.start} - ${item.end}</div>
-            </div>
-          </div>
-        `;
-
-        bar.dataset.title = item.title;
-        bar.dataset.type = item.type;
-        bar.dataset.icon = item.icon;
-        bar.dataset.start = item.start;
-        bar.dataset.end = item.end;
-
-        bar.style.opacity = 0;
-        setTimeout(() => bar.style.opacity = 1, 20);
-
-        cell.appendChild(bar);
-
-        // marcar filas ocupadas
-        for (let i = 0; i < blocks; i++) {
-          occupied[`${rowIndex + i}-${d}`] = true;
-        }
-      }
-
-      grid.appendChild(cell);
-    }
-  });
-
-  enableDetails();
-}
-
-
-// =========================
-// RENDER COMPACT LIST (mobile)
-// =========================
-function generateList() {
-  const wrapper = $("#list-wrapper");
-  wrapper.innerHTML = "";
-
-  days.forEach((dayName, d) => {
-    // filter events for this day
-    const events = scheduleData.filter(e => e.day === d)
-      .sort((a,b) => toMinutes(a.start)-toMinutes(b.start));
-
-    const dayCard = document.createElement("div");
-    dayCard.className = "day-card";
-
-    const header = document.createElement("div");
-    header.className = "flex items-center justify-between mb-2";
-    header.innerHTML = `<div class="font-semibold">${d===0? 'Domingo': dayName.charAt(0).toUpperCase()+dayName.slice(1)}</div>
-                        <div class="text-xs text-[var(--text-soft)]">${events.length} eventos</div>`;
-    dayCard.appendChild(header);
-
-    if (events.length === 0) {
-      const empty = document.createElement("div");
-      empty.className = "text-sm text-[var(--text-soft)]";
-      empty.textContent = "Sin actividades";
-      dayCard.appendChild(empty);
-    } else {
-      events.forEach(ev => {
-        const row = document.createElement("div");
-        row.className = "event-row";
-
-        const left = document.createElement("div");
-        left.style.minWidth = "88px";
-        left.innerHTML = `<div class="font-mono text-xs">${ev.start}</div><div class="text-[11px] text-[var(--text-soft)]">${ev.end}</div>`;
-
-        const right = document.createElement("div");
-        right.style.flex = "1";
-        right.innerHTML = `<div style="font-weight:700">${ev.icon} ${ev.title}</div>
-                           <div class="text-xs text-[var(--text-soft)]">${ev.start} - ${ev.end}</div>`;
-
-        row.appendChild(left);
-        row.appendChild(right);
-
-        // clicking on mobile list shows details
-        row.addEventListener("click", () => {
-          showDetailsFromData(ev);
-          // scroll to details panel
-          document.getElementById("detail-content").scrollIntoView({behavior:"smooth", block:"center"});
-        });
-
-        dayCard.appendChild(row);
-      });
-    }
-
-    wrapper.appendChild(dayCard);
-  });
-}
-
-// =========================
-// DETAILS & INTERACTION
-// =========================
-function enableDetails() {
-  const bars = $$(".schedule-item");
-  bars.forEach(b => {
-    b.style.cursor = "pointer";
-    b.addEventListener("click", () => {
-      showDetailsFromBar(b);
-    });
-  });
-}
-function showDetailsFromBar(bar) {
-  const content = $("#detail-content");
-  const title = bar.dataset.title || "";
-  const type = bar.dataset.type || "";
-  const icon = bar.dataset.icon || "";
-  const start = bar.dataset.start || "";
-  const end = bar.dataset.end || "";
-
-  content.innerHTML = `
-    <div class="mb-2"><strong style="font-size:15px">${icon} ${title}</strong></div>
-    <div class="text-sm text-[var(--text-soft)]">Categoría: <b>${type}</b></div>
-    <div class="text-sm text-[var(--text-soft)] mt-2">Horario: <b>${start} — ${end}</b></div>
-  `;
-}
-function showDetailsFromData(ev) {
-  const content = $("#detail-content");
-  content.innerHTML = `
-    <div class="mb-2"><strong style="font-size:15px">${ev.icon} ${ev.title}</strong></div>
-    <div class="text-sm text-[var(--text-soft)]">Categoría: <b>${ev.type}</b></div>
-    <div class="text-sm text-[var(--text-soft)] mt-2">Horario: <b>${ev.start} — ${ev.end}</b></div>
-  `;
-}
-
-// =========================
-// FILTERS
-// =========================
-function filterSchedule(type) {
-  // update filter buttons visual (optional)
-  $$(".filter-btn").forEach(b => b.classList.remove("active"));
-  $$(".filter-btn").forEach(b => {
-    if (b.dataset?.filter === type || type === "all" && b.dataset?.filter === "all") b.classList.add("active");
-  });
-
-  // set opacity
-  $$(".schedule-item").forEach(it => {
-    if (type === "all" || it.dataset.type === type) it.style.opacity = "1";
-    else it.style.opacity = ".15";
-  });
-
-  // mobile list: hide non-matching events
-  $$("#list-wrapper .day-card").forEach(card => {
-    const rows = Array.from(card.querySelectorAll(".event-row"));
-    rows.forEach(row => {
-      const text = row.innerText.toLowerCase();
-      if (type === "all") row.style.display = "";
-      else {
-        // naive match by category name inside details (we stored event type in dataset? not here). We'll show all on mobile for now
-        row.style.display = "";
-      }
-    });
-  });
-}
-
-// =========================
-// CHART
-// =========================
-function loadChart() {
-  const ctx = document.getElementById("balanceChart");
-  if (!ctx) return;
-
-  const counts = { academic:0, art:0, study:0, life:0 };
-  scheduleData.forEach(e => counts[e.type] = (counts[e.type]||0) + ((toMinutes(e.end)-toMinutes(e.start))/60));
-
-  new Chart(ctx, {
-    type: "doughnut",
-    data: {
-      labels: ["Académico","Arte","Estudio","Vida"],
-      datasets: [{ data: [counts.academic, counts.art, counts.study, counts.life], backgroundColor: ['#60a5fa','#f472b6','#34d399','#fb923c'] }]
-    },
-    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}} }
-  });
-}
-
-
-// =========================
-// RESPONSIVE RENDER HANDLER
-// =========================
-function renderAll() {
-  if (window.innerWidth < 768) {
-    generateList();
-  } else {
-    generateGrid();
-  }
-  loadChart();
-  filterSchedule("all");
-}
-
-// handle resize
-let resizeTimeout;
-window.addEventListener("resize", () => {
-  clearTimeout(resizeTimeout);
-  resizeTimeout = setTimeout(renderAll, 120);
-});
-
-// =========================
-// INIT
-// =========================
-document.addEventListener("DOMContentLoaded", () => {
-  // set dark mode if user prefers
-  if (localStorage.theme === "dark" || (!localStorage.theme && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-    document.documentElement.classList.add("dark");
-    $("#darkToggle").setAttribute("aria-pressed","true");
-  }
-
-  renderAll();
-
-  // attach dark toggle
-  $("#darkToggle").addEventListener("click", () => {
-    document.documentElement.classList.toggle("dark");
-    const on = document.documentElement.classList.contains("dark");
-    localStorage.theme = on ? "dark" : "light";
-    $("#darkToggle").setAttribute("aria-pressed", on ? "true" : "false");
-  });
-});
+      const item = scheduleData.find(e=>e.day===d && e.start===h);
+      if(item){
+        const blocks = blocks

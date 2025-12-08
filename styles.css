@@ -1,5 +1,4 @@
 /* Glass Modern theme + responsive layout + animations */
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root{
@@ -124,7 +123,7 @@ html,body { height: 100%; margin:0; font-family: Inter, system-ui, -apple-system
 
 /* responsive: mobile list */
 #list-wrapper .day-card { border-radius:10px; padding:10px; border:1px solid var(--card-border); background:var(--card-bg); }
-#list-wrapper .event-row { display:flex; gap:10px; align-items:center; padding:8px 0; border-bottom:1px dashed rgba(0,0,0,0.03); }
+#list-wrapper .event-row { display:flex; gap:10px; align-items:center; padding:8px 0; border-bottom:1px dashed rgba(0,0,0,0.03); cursor:pointer; }
 #list-wrapper .event-row:last-child{ border-bottom: none; }
 
 /* hidden row (minimize) */
