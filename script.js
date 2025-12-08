@@ -32,6 +32,7 @@ const categoryClass = {
 };
 
 const CELL_HEIGHT = 48; // matches --cell-height in styles (px)
+
 let compactMode = false;
 
 // =========================
@@ -49,45 +50,104 @@ function blocksBetween(start, end) {
 const $ = sel => document.querySelector(sel);
 const $$ = sel => Array.from(document.querySelectorAll(sel));
 
-// =========================
-// RENDER GRID (desktop)
-// =========================
+// ===================================================
+// MINIMIZE MODE (solo muestra el bloque inicial)
+// ===================================================
+
+function toggleEmptyRows() {
+  compactMode = !compactMode;
+
+  document.getElementById("minimizeBtn").setAttribute("aria-pressed", compactMode);
+  document.getElementById("minimizeIcon").classList.toggle("fa-expand-arrows-alt", !compactMode);
+  document.getElementById("minimizeIcon").classList.toggle("fa-compress-arrows-alt", compactMode);
+
+  // volver a renderizar grid
+  if (window.innerWidth >= 768) generateGrid();
+}
+
+
+
+// ===================================================
+// GRID MODE (DESKTOP)
+// ===================================================
 function generateGrid() {
   const grid = $("#grid-content");
   grid.innerHTML = "";
 
-  // mark occupied cells so we don't double-render a bar over them
+  // usado SOLO en modo normal
   const occupied = {};
 
   hours.forEach((h, rowIndex) => {
-    // hour cell (first column)
+
+    // ---- celda de hora
     const hourCell = document.createElement("div");
     hourCell.className = "border p-2 font-semibold text-center hour-cell";
     hourCell.style.height = `${CELL_HEIGHT}px`;
     hourCell.textContent = h;
     grid.appendChild(hourCell);
 
-    // 7 day columns
-    for (let d=0; d<7; d++) {
+
+    // ---- columnas de días (0–6)
+    for (let d = 0; d < 7; d++) {
       const key = `${rowIndex}-${d}`;
       const cell = document.createElement("div");
       cell.className = "border min-h-[40px] relative";
       cell.style.height = `${CELL_HEIGHT}px`;
 
-      // skip if occupied
+
+      // =======================================================
+      // 🔹 MODO MINIMIZADO — SOLO BLOQUE START
+      // =======================================================
+      if (compactMode) {
+        const item = scheduleData.find(e => e.day === d && e.start === h);
+        if (item) {
+          const bar = document.createElement("div");
+          bar.className = `schedule-item ${categoryClass[item.type]}`;
+          bar.style.height = `${CELL_HEIGHT - 10}px`;
+          bar.style.top = `4px`;
+          bar.style.left = `6px`;
+          bar.style.right = `6px`;
+          bar.style.borderRadius = `12px`;
+          bar.style.display = "flex";
+          bar.style.alignItems = "center";
+
+          bar.innerHTML = `
+            <div class="flex items-center gap-2">
+              <div style="font-size:16px">${item.icon}</div>
+              <div style="font-weight:700; font-size:13px">${item.title}</div>
+            </div>
+          `;
+
+          bar.dataset.title = item.title;
+          bar.dataset.type = item.type;
+          bar.dataset.icon = item.icon;
+          bar.dataset.start = item.start;
+          bar.dataset.end = item.end;
+
+          cell.appendChild(bar);
+        }
+
+        grid.appendChild(cell);
+        continue;
+      }
+
+
+
+      // =======================================================
+      // 🔹 MODO NORMAL — BARRAS COMPLETAS
+      // =======================================================
       if (occupied[key]) {
         grid.appendChild(cell);
         continue;
       }
 
-      // find event starting exactly at this time
       const item = scheduleData.find(e => e.day === d && e.start === h);
       if (item) {
         const blocks = blocksBetween(item.start, item.end);
         const bar = document.createElement("div");
 
         bar.className = `schedule-item ${categoryClass[item.type]}`;
-        bar.style.height = `${blocks * CELL_HEIGHT - 8}px`; // - padding to fit
+        bar.style.height = `${blocks * CELL_HEIGHT - 8}px`;
         bar.style.top = `4px`;
         bar.style.left = `6px`;
         bar.style.right = `6px`;
@@ -95,36 +155,29 @@ function generateGrid() {
         bar.style.display = "flex";
         bar.style.alignItems = "center";
 
-        // content: icon + title + time label
-        const left = document.createElement("div");
-        left.className = "flex items-center gap-3";
-        const ico = document.createElement("div");
-        ico.textContent = item.icon;
-        ico.style.fontSize = "18px";
-        ico.style.lineHeight = "1";
-        const txt = document.createElement("div");
-        txt.innerHTML = `<div style="font-weight:700; font-size:13px;">${item.title}</div><div class="meta" style="font-size:11px; opacity:0.85">${item.start} - ${item.end}</div>`;
-        left.appendChild(ico);
-        left.appendChild(txt);
+        bar.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div style="font-size:18px">${item.icon}</div>
+            <div>
+              <div style="font-weight:700; font-size:13px">${item.title}</div>
+              <div class="meta" style="font-size:11px; opacity:.85">${item.start} - ${item.end}</div>
+            </div>
+          </div>
+        `;
 
-        bar.appendChild(left);
-
-        // attach data for details
         bar.dataset.title = item.title;
         bar.dataset.type = item.type;
         bar.dataset.icon = item.icon;
         bar.dataset.start = item.start;
         bar.dataset.end = item.end;
 
-        // animation: fade in
         bar.style.opacity = 0;
-        setTimeout(()=> bar.style.opacity = 1, 20);
+        setTimeout(() => bar.style.opacity = 1, 20);
 
-        // append
         cell.appendChild(bar);
 
-        // mark occupied cells (the rows the bar spans)
-        for (let i=0; i<blocks; i++) {
+        // marcar filas ocupadas
+        for (let i = 0; i < blocks; i++) {
           occupied[`${rowIndex + i}-${d}`] = true;
         }
       }
@@ -135,6 +188,7 @@ function generateGrid() {
 
   enableDetails();
 }
+
 
 // =========================
 // RENDER COMPACT LIST (mobile)
@@ -279,31 +333,6 @@ function loadChart() {
   });
 }
 
-// =========================
-// MINIMIZE EMPTY ROWS
-// =========================
-function toggleEmptyRows() {
-  compactMode = !compactMode;
-  document.getElementById("minimizeBtn").setAttribute("aria-pressed", compactMode ? "true" : "false");
-  document.getElementById("minimizeIcon").classList.toggle("fa-expand-arrows-alt", !compactMode);
-  document.getElementById("minimizeIcon").classList.toggle("fa-compress-arrows-alt", compactMode);
-
-  const rows = $$(".grid .contents > div"); // all appended cells sequence (hour + 7 cells)
-  // rows are structured as repeated blocks of 8 nodes per hour: hourCell + 7 day cells
-  const perRow = 8;
-  for (let r = 0; r < hours.length; r++) {
-    const offset = r * perRow;
-    // slice the 7 day cells
-    const dayCells = rows.slice(offset + 1, offset + 8);
-    const hasContent = dayCells.some(c => c.querySelector(".schedule-item"));
-    // hide/show the 8 elements (hour + days)
-    for (let k = 0; k < perRow; k++) {
-      const node = rows[offset + k];
-      if (!node) continue;
-      node.classList.toggle("hidden-row", compactMode && !hasContent);
-    }
-  }
-}
 
 // =========================
 // RESPONSIVE RENDER HANDLER
