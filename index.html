@@ -1,131 +1,118 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Planificador Semanal</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Planificador Semanal — Glass Modern</title>
 
-    <!-- Tailwind -->
-    <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tailwind (rápido) -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <!-- Icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
-    <!-- Styles -->
-    <link rel="stylesheet" href="styles.css" />
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css">
 </head>
+<body class="antialiased min-h-screen bg-[var(--bg)] text-[var(--text)]">
 
-<body class="antialiased min-h-screen flex flex-col">
-
-    <!-- NAVBAR -->
-    <nav class="sticky top-0 bg-[var(--card-bg)] border-b border-[var(--card-border)] z-20">
-        <div class="max-w-6xl mx-auto px-4 h-16 flex justify-between items-center">
-            <h1 class="text-xl font-bold flex items-center gap-2">
-                📅 Mi Organizador Semanal
-            </h1>
-
-            <div class="flex items-center gap-4">
-                <button class="nav-btn" onclick="scrollToSection('schedule')">Horario</button>
-                <button class="nav-btn" onclick="scrollToSection('stats')">Balance</button>
-
-                <button onclick="toggleDarkMode()" class="nav-btn text-xl">
-                    <i class="fas fa-moon"></i>
-                </button>
-            </div>
+  <!-- NAV -->
+  <header class="sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4 backdrop-blur glass-nav">
+      <div class="flex items-center gap-3">
+        <span class="text-2xl">📅</span>
+        <div>
+          <div class="text-lg font-semibold">Mi Organizador Semanal</div>
+          <div class="text-xs text-[var(--text-soft)]">Glass Modern • Responsive</div>
         </div>
-    </nav>
+      </div>
 
-    <!-- CONTENIDO -->
-    <main class="max-w-6xl mx-auto px-4 py-8 w-full">
+      <div class="flex items-center gap-3">
+        <button class="nav-btn" onclick="scrollToSection('schedule')" aria-label="Ir a horario">Horario</button>
+        <button class="nav-btn" onclick="scrollToSection('stats')" aria-label="Ir a estadísticas">Balance</button>
 
-        <!-- Intro -->
-        <section class="section-card mb-8">
-            <h2 class="section-title">Resumen</h2>
-            <p class="section-text">
-                Tu horario semanal actualizado y organizado por categorías.
-            </p>
-        </section>
+        <button id="minimizeBtn" class="nav-btn" onclick="toggleEmptyRows()" aria-pressed="false" aria-label="Minimizar filas vacías">
+          <i id="minimizeIcon" class="fas fa-compress-arrows-alt"></i>
+        </button>
 
-        <!-- Filtros -->
-        <div class="flex gap-2 flex-wrap mb-6">
-            <button class="filter-btn nav-btn border px-3 py-1" data-filter="all" onclick="filterSchedule('all')">Todo</button>
-            <button class="filter-btn nav-btn bg-blue-200 text-blue-800 px-3 py-1" onclick="filterSchedule('academic')">Académico</button>
-            <button class="filter-btn nav-btn bg-rose-200 text-rose-800 px-3 py-1" onclick="filterSchedule('art')">Arte</button>
-            <button class="filter-btn nav-btn bg-emerald-200 text-emerald-800 px-3 py-1" onclick="filterSchedule('study')">Estudio</button>
-            <button class="filter-btn nav-btn bg-orange-200 text-orange-800 px-3 py-1" onclick="filterSchedule('life')">Vida</button>
+        <button id="darkToggle" class="nav-btn" onclick="toggleDarkMode()" aria-pressed="false" aria-label="Cambiar modo oscuro">
+          <i class="fas fa-moon"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-8">
+    <!-- Intro -->
+    <section class="section-card mb-6 glass">
+      <h2 class="section-title">Resumen</h2>
+      <p class="section-text">Vista moderna tipo glass. Toca una barra para ver detalles. En móvil verás una lista compacta por día.</p>
+    </section>
+
+    <!-- Controls -->
+    <div class="flex gap-2 flex-wrap items-center mb-4">
+      <button class="filter-btn nav-btn border px-3 py-1" data-filter="all" onclick="filterSchedule('all')">Todo</button>
+      <button class="filter-btn nav-btn px-3 py-1" onclick="filterSchedule('academic')" style="background:var(--accent-blue-bg);color:var(--accent-blue)">Académico</button>
+      <button class="filter-btn nav-btn px-3 py-1" onclick="filterSchedule('art')" style="background:var(--accent-pink-bg);color:var(--accent-pink)">Arte</button>
+      <button class="filter-btn nav-btn px-3 py-1" onclick="filterSchedule('study')" style="background:var(--accent-green-bg);color:var(--accent-green)">Estudio</button>
+      <button class="filter-btn nav-btn px-3 py-1" onclick="filterSchedule('life')" style="background:var(--accent-orange-bg);color:var(--accent-orange)">Vida</button>
+    </div>
+
+    <!-- Main layout -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+
+      <!-- GRID (desktop) / LIST (mobile) -->
+      <div class="lg:col-span-2 section-card p-0 glass">
+        <div class="p-4 border-b border-[var(--card-border)] bg-[var(--header-bg)]">
+          <h3 class="font-semibold">Vista Semanal</h3>
         </div>
 
-        <!-- TABLA -->
-        <section id="schedule" class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+        <div class="overflow-auto p-4 schedule-scroll">
+          <!-- Grid rendering goes into #grid-content (desktop) -->
+          <div id="grid-wrapper" class="hidden md:block">
+            <div class="grid grid-cols-8 gap-1 min-w-[800px] text-xs">
+              <div class="header-cell">Hora</div>
+              <div class="header-day">Domingo</div>
+              <div class="header-day">Lunes</div>
+              <div class="header-day">Martes</div>
+              <div class="header-day">Miércoles</div>
+              <div class="header-day">Jueves</div>
+              <div class="header-day">Viernes</div>
+              <div class="header-day">Sábado</div>
 
-            <!-- GRID -->
-            <div class="section-card lg:col-span-2 h-[800px] overflow-hidden flex flex-col">
-                <div class="p-4 border-b border-[var(--card-border)] bg-[var(--header-bg)]">
-                    <h3 class="font-semibold">Vista Semanal</h3>
-                </div>
-
-                <div class="overflow-auto flex-grow p-4 schedule-scroll">
-                    <div class="grid grid-cols-8 gap-1 min-w-[800px] text-xs">
-                        <div class="header-cell">Hora</div>
-                        <div class="header-day">Domingo</div>
-                        <div class="header-day">Lunes</div>
-                        <div class="header-day">Martes</div>
-                        <div class="header-day">Miércoles</div>
-                        <div class="header-day">Jueves</div>
-                        <div class="header-day">Viernes</div>
-                        <div class="header-day">Sábado</div>
-
-                        <div id="grid-content" class="contents"></div>
-                    </div>
-                </div>
+              <div id="grid-content" class="contents w-full"></div>
             </div>
+          </div>
 
-            <!-- DETALLES -->
-            <div class="section-card sticky top-24 h-fit">
-                <h3 class="text-lg font-bold mb-2">Detalles</h3>
-                <div id="detail-content" class="text-sm">
-                    Selecciona un bloque.
-                </div>
-            </div>
-        </section>
+          <!-- Compact list for mobile -->
+          <div id="list-wrapper" class="md:hidden space-y-4">
+            <!-- JS fills this -->
+          </div>
+        </div>
+      </div>
 
-        <!-- CHART -->
-        <section id="stats" class="section-card">
-            <h2 class="section-title mb-2">Distribución Semanal</h2>
-            <p class="section-text mb-6">Horas totales por categoría.</p>
+      <!-- DETAILS + STATS -->
+      <aside class="section-card sticky top-24 h-fit glass">
+        <h3 class="text-lg font-bold mb-2">Detalles</h3>
+        <div id="detail-content" class="text-sm text-[var(--text-soft)]">Selecciona un bloque.</div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
-                <canvas id="balanceChart" class="max-w-sm mx-auto"></canvas>
-                <ul class="space-y-3 text-sm">
-                    <li>✔ Bloques organizados por día.</li>
-                    <li>✔ Colores por categoría.</li>
-                    <li>✔ Carga ligera y rápido despliegue.</li>
-                </ul>
-            </div>
-        </section>
+        <hr class="my-4 border-[var(--card-border)]">
 
-    </main>
+        <h4 class="font-semibold mb-2">Distribución</h4>
+        <div class="w-full">
+          <canvas id="balanceChart"></canvas>
+        </div>
+      </aside>
 
-    <footer class="py-8 text-center">Hecho con ❤️</footer>
+    </section>
 
-    <!-- Scripts -->
-    <script src="script.js"></script>
+    <footer class="text-center text-sm text-[var(--text-soft)] py-6">Hecho con ❤️ — Glass Modern</footer>
+  </main>
 
-    <script>
-        if (localStorage.theme === "dark" ||
-            (!localStorage.theme && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-            document.documentElement.classList.add("dark");
-        }
-        function toggleDarkMode() {
-            document.documentElement.classList.toggle("dark");
-            localStorage.theme =
-                document.documentElement.classList.contains("dark") ? "dark" : "light";
-        }
-    </script>
-
+  <!-- Script -->
+  <script src="script.js"></script>
 </body>
 </html>
