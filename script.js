@@ -1,28 +1,38 @@
-// =======================================
-// 1. CONFIGURACIÓN DE HORARIO SEMANAL
-// =======================================
+// =========================
+// CONFIG
+// =========================
 
-// Días de la semana
 const days = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
 
-// Intervalos de tiempo
 const hours = [
-    "08:00", "09:00", "10:00", "11:00",
-    "12:00", "13:00", "14:00", "15:00",
-    "16:00", "17:00", "18:00"
+    "07:00", "07:30", "08:00", "08:30",
+    "09:00", "09:30", "10:00", "10:30",
+    "11:00", "11:30", "12:00", "12:30",
+    "13:00", "13:30", "14:00", "14:30",
+    "15:00", "15:30", "16:00", "16:30",
+    "17:00", "17:30", "18:00", "18:30",
+    "19:00", "19:30", "20:00"
 ];
 
-// Tus actividades (ejemplo)
+// HORARIO REAL
 const scheduleData = [
-    { day: 1, hour: "08:00", title: "Cálculo III", type: "academic", icon: "🎓", desc: "Clase de Cálculo" },
-    { day: 2, hour: "10:00", title: "Estructuras de Datos", type: "academic", icon: "🎓" },
-    { day: 0, hour: "17:00", title: "Teatro", type: "art", icon: "🎭" },
-    { day: 3, hour: "14:00", title: "Estudio IA", type: "study", icon: "📚" },
-    { day: 5, hour: "18:00", title: "Gimnasio", type: "life", icon: "🧘" },
+    { day: 0, start: "13:00", end: "17:00", title: "Teatro", type: "art", icon: "🎭" },
+
+    { day: 1, start: "17:00", end: "19:00", title: "Lenguaje de Programación", type: "academic", icon: "💻" },
+
+    { day: 2, start: "07:30", end: "10:30", title: "Probabilidad", type: "academic", icon: "🔢" },
+    { day: 2, start: "15:00", end: "16:30", title: "Inglés", type: "academic", icon: "🇬🇧" },
+
+    { day: 3, start: "10:30", end: "12:00", title: "Metodología", type: "academic", icon: "📝" },
+
+    { day: 4, start: "07:30", end: "10:30", title: "Probabilidad", type: "academic", icon: "🔢" },
+    { day: 4, start: "15:00", end: "16:30", title: "Inglés", type: "academic", icon: "🇬🇧" },
+    { day: 4, start: "18:00", end: "20:00", title: "Ingeniería de Software", type: "academic", icon: "💻" },
+
+    { day: 6, start: "08:30", end: "12:00", title: "Redes I", type: "academic", icon: "🌐" }
 ];
 
-
-// Crear color bonito dinámico por categoría
+// Colores
 const colors = {
     academic: "bg-blue-200 text-blue-900",
     art: "bg-rose-200 text-rose-900",
@@ -31,38 +41,38 @@ const colors = {
 };
 
 
-// =======================================
-// 2. GENERAR GRILLA SEMANAL
-// =======================================
+// =========================
+// GRID
+// =========================
 
 function generateGrid() {
     const grid = document.getElementById("grid-content");
     grid.innerHTML = "";
 
-    hours.forEach(hour => {
-        // Columna de la hora
+    hours.forEach(h => {
         const hourCell = document.createElement("div");
-        hourCell.className = "border p-2 bg-white font-semibold";
-        hourCell.textContent = hour;
+        hourCell.className = "border p-2 font-semibold text-center bg-[var(--card-bg)]";
+        hourCell.textContent = h;
         grid.appendChild(hourCell);
 
-        // 7 días
         for (let d = 0; d < 7; d++) {
             const cell = document.createElement("div");
-            cell.className = "border p-1 min-h-[50px] relative bg-stone-100";
+            cell.className = "border min-h-[40px] relative";
 
-            const item = scheduleData.find(e => e.day === d && e.hour === hour);
+            const item = scheduleData.find(e =>
+                e.day === d && e.start === h
+            );
 
             if (item) {
-                cell.innerHTML = `
-                    <div class="schedule-item ${colors[item.type]} p-1 rounded text-[10px] cursor-pointer"
-                        data-title="${item.title}"
-                        data-type="${item.type}"
-                        data-icon="${item.icon}"
-                        data-desc="${item.desc || "Sin descripción"}">
-                        ${item.icon} ${item.title}
-                    </div>
-                `;
+                const div = document.createElement("div");
+                div.className = `schedule-item absolute inset-0 ${colors[item.type]}`;
+                div.textContent = `${item.icon} ${item.title}`;
+                div.dataset.title = item.title;
+                div.dataset.type = item.type;
+                div.dataset.icon = item.icon;
+                div.dataset.desc = item.title;
+
+                cell.appendChild(div);
             }
 
             grid.appendChild(cell);
@@ -73,69 +83,48 @@ function generateGrid() {
 }
 
 
-// =======================================
-// 3. SISTEMA DE DETALLES (panel derecho)
-// =======================================
+// =========================
+// DETALLES
+// =========================
 
 function enableDetails() {
     const items = document.querySelectorAll(".schedule-item");
-    const detailTitle = document.getElementById("detail-title");
-    const detailContent = document.getElementById("detail-content");
-    const detailIcon = document.getElementById("detail-icon");
+    const detail = document.getElementById("detail-content");
 
     items.forEach(item => {
         item.addEventListener("click", () => {
-            detailTitle.textContent = item.dataset.title;
-            detailIcon.textContent = item.dataset.icon;
-            detailContent.innerHTML = `
-                <p class="text-sm mb-2">${item.dataset.desc}</p>
-                <span class="px-2 py-1 rounded text-xs ${colors[item.dataset.type]}">
-                    Categoría: ${item.dataset.type}
-                </span>
+            detail.innerHTML = `
+                <h3 class="font-semibold text-lg mb-2">${item.dataset.icon} ${item.dataset.title}</h3>
+                <p>Categoría: <b>${item.dataset.type}</b></p>
             `;
         });
     });
 }
 
 
-// =======================================
-// 4. FILTROS DE CATEGORÍA
-// =======================================
+// =========================
+// FILTRADO
+// =========================
 
 function filterSchedule(type) {
     const items = document.querySelectorAll(".schedule-item");
-    const buttons = document.querySelectorAll(".filter-btn");
 
-    buttons.forEach(btn => btn.classList.remove("active"));
-    document.querySelector(`[data-filter="${type}"]`)?.classList.add("active");
-
-    items.forEach(item => {
-        if (type === "all" || item.dataset.type === type) {
-            item.style.opacity = "1";
-        } else {
-            item.style.opacity = "0.1";
-        }
+    items.forEach(it => {
+        it.style.opacity =
+            type === "all" || it.dataset.type === type ? "1" : ".15";
     });
 }
 
 
-// =======================================
-// 5. CHART PRINCIPAL: balanceChart
-// =======================================
+// =========================
+// CHART
+// =========================
 
 function loadChart() {
     const ctx = document.getElementById("balanceChart");
-    if (!ctx) return;
+    const counts = { academic: 0, art: 0, study: 0, life: 0 };
 
-    // Contar actividades por categoría
-    const counts = {
-        academic: 0,
-        art: 0,
-        study: 0,
-        life: 0
-    };
-
-    scheduleData.forEach(item => counts[item.type]++);
+    scheduleData.forEach(e => counts[e.type]++);
 
     new Chart(ctx, {
         type: "pie",
@@ -155,21 +144,16 @@ function loadChart() {
 }
 
 
-// =======================================
-// 6. SMOOTH SCROLL DE NAVBAR
-// =======================================
-
-function scrollToSection(id) {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-}
-
-
-// =======================================
-// 7. INICIALIZACIÓN
-// =======================================
+// =========================
+// INIT
+// =========================
 
 document.addEventListener("DOMContentLoaded", () => {
     generateGrid();
     loadChart();
     filterSchedule("all");
 });
+
+function scrollToSection(id) {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+}
