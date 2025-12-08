@@ -2,6 +2,13 @@
 // CONFIG
 // =========================
 const days = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+const hours = [
+  "07:00","07:30","08:00","08:30","09:00","09:30","10:00","10:30",
+  "11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30",
+  "15:00","15:30","16:00","16:30","17:00","17:30","18:00","18:30",
+  "19:00","19:30","20:00"
+];
+
 const scheduleData = [
   { day:0, start:"13:00", end:"17:00", title:"Teatro", type:"art", icon:"🎭" },
   { day:1, start:"17:00", end:"19:00", title:"Lenguaje de Programación", type:"academic", icon:"💻" },
@@ -21,8 +28,8 @@ const categoryClass = {
   life: "bg-life"
 };
 
-let compactMode = false;
 const CELL_HEIGHT = 48;
+let compactMode = false;
 
 // =========================
 // UTIL
@@ -30,8 +37,13 @@ const CELL_HEIGHT = 48;
 const $ = sel => document.querySelector(sel);
 const $$ = sel => Array.from(document.querySelectorAll(sel));
 
-function toMinutes(h){ const [H,M]=h.split(":").map(Number); return H*60+M; }
-function blocksBetween(start,end){ return Math.round((toMinutes(end)-toMinutes(start))/30); }
+function toMinutes(h){
+  const [H,M]=h.split(":").map(Number);
+  return H*60+M;
+}
+function blocksBetween(start,end){
+  return Math.round((toMinutes(end)-toMinutes(start))/30);
+}
 
 // =========================
 // MINIMIZE MODE
@@ -47,11 +59,10 @@ function toggleEmptyRows(){
 // =========================
 // CREATE BAR
 // =========================
-function createBar(item){
-  const blocks = blocksBetween(item.start,item.end);
+function createBar(item,height){
   const div = document.createElement("div");
   div.className=`schedule-item ${categoryClass[item.type]}`;
-  div.style.height=`${CELL_HEIGHT*blocks-4}px`;
+  div.style.height=`${height}px`;
   div.title=`${item.title} (${item.start}-${item.end})`;
   div.innerHTML=`<span class="icon">${item.icon}</span> <span>${item.title}</span>`;
   div.onclick = ()=>showDetail(item);
@@ -59,35 +70,52 @@ function createBar(item){
 }
 
 // =========================
-// GRID MODE COMPACT
+// GRID MODE (DESKTOP)
 // =========================
 function generateGrid(type="all"){
   const grid=$("#grid-content");
   grid.innerHTML="";
+  const occupied={};
 
-  for(let d=0; d<7; d++){
-    const col = document.createElement("div");
-    col.className="day-column";
-    const dayTitle = document.createElement("div");
-    dayTitle.className="font-semibold mb-2 day-header";
-    dayTitle.textContent=days[d].charAt(0).toUpperCase()+days[d].slice(1);
-    col.appendChild(dayTitle);
+  // Si estamos en modo compacto, solo tomamos horas de inicio de los eventos
+  const hoursToRender = compactMode
+    ? Array.from(new Set(scheduleData.filter(e=>type==="all"||e.type===type).map(e=>e.start)))
+    : hours;
 
-    let events = scheduleData.filter(e=>e.day===d && (type==="all"||e.type===type));
-    if(compactMode){
-      // Ordenamos por hora
-      events.sort((a,b)=>toMinutes(a.start)-toMinutes(b.start));
+  hoursToRender.forEach((h,rowIndex)=>{
+    // Hora
+    const hourCell = document.createElement("div");
+    hourCell.className="border p-2 font-semibold text-center hour-cell";
+    hourCell.style.height=`${CELL_HEIGHT}px`;
+    hourCell.textContent=h;
+    grid.appendChild(hourCell);
+
+    // Días
+    for(let d=0;d<7;d++){
+      const key=`${rowIndex}-${d}`;
+      const cell=document.createElement("div");
+      cell.className="border min-h-[40px] relative";
+      cell.style.height=`${CELL_HEIGHT}px`;
+
+      if(occupied[key]){
+        grid.appendChild(cell);
+        continue;
+      }
+
+      const item=scheduleData.find(e=>e.day===d && e.start===h && (type==="all"||e.type===type));
+      if(item){
+        const blocks = blocksBetween(item.start,item.end);
+        for(let b=0;b<blocks;b++) occupied[`${rowIndex+b}-${d}`]=true;
+        const height = compactMode ? CELL_HEIGHT-10 : CELL_HEIGHT*blocks-10;
+        cell.appendChild(createBar(item,height));
+      } else if(compactMode){
+        // Ocultar celdas vacías en modo compacto
+        cell.style.display="none";
+      }
+
+      grid.appendChild(cell);
     }
-
-    events.forEach(e=>{
-      const bar = createBar(e);
-      col.appendChild(bar);
-    });
-
-    if(events.length===0) col.style.display = compactMode ? "none" : "block";
-
-    grid.appendChild(col);
-  }
+  });
 }
 
 // =========================
@@ -136,7 +164,9 @@ function showDetail(item){
 function filterSchedule(type){
   $$(".filter-btn").forEach(btn=>btn.classList.remove("active"));
   $(`.filter-btn[data-filter="${type}"]`)?.classList.add("active");
-  renderAll();
+
+  if(window.innerWidth>=768) generateGrid(type);
+  else generateList(type);
 }
 
 // =========================
@@ -193,7 +223,8 @@ function renderAll(){
 function adjustBodyHeight(){
   const mainHeight = document.querySelector("main").offsetHeight;
   const vh = window.innerHeight;
-  document.body.style.minHeight = mainHeight < vh ? `${vh}px` : "100%";
+  if(mainHeight<vh) document.body.style.minHeight=`${vh}px`;
+  else document.body.style.minHeight="100%";
 }
 
 // =========================
@@ -206,7 +237,11 @@ window.addEventListener("DOMContentLoaded",()=>{
   }
 
   renderAll();
+
   $("#darkToggle").addEventListener("click",toggleDarkMode);
 });
 
-window.addEventListener("resize",()=>{ clearTimeout(window._resizeTimeout); window._resizeTimeout=setTimeout(renderAll,120); });
+window.addEventListener("resize",()=>{
+  clearTimeout(window._resizeTimeout);
+  window._resizeTimeout=setTimeout(renderAll,120);
+});
