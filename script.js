@@ -72,14 +72,14 @@ function createBar(item,height){
 // =========================
 // GRID MODE (DESKTOP)
 // =========================
-function generateGrid(type="all"){
+function generateGrid(type="all") {
   const grid = $("#grid-content");
   grid.innerHTML = "";
   const occupied = {};
 
-  // Obtenemos todas las horas que deben aparecer
+  // Iteramos todas las horas
   const hoursToRender = compactMode
-    ? Array.from(new Set(scheduleData.filter(e=>type==="all"||e.type===type).map(e=>e.start))).sort((a,b)=>toMinutes(a)-toMinutes(b))
+    ? Array.from(new Set(scheduleData.filter(e => type==="all"||e.type===type).map(e => e.start))).sort((a,b)=>toMinutes(a)-toMinutes(b))
     : hours;
 
   hoursToRender.forEach((h,rowIndex)=>{
@@ -90,33 +90,41 @@ function generateGrid(type="all"){
     hourCell.textContent = h;
     grid.appendChild(hourCell);
 
-    // Celdas de cada día
+    // Generamos columnas por día
     for(let d=0; d<7; d++){
       const key = `${rowIndex}-${d}`;
       const cell = document.createElement("div");
       cell.className = "border min-h-[40px] relative";
       cell.style.height = `${CELL_HEIGHT}px`;
 
-      // Verificamos si hay evento en esta hora y día
-      const item = scheduleData.find(e=>e.day===d && e.start===h && (type==="all"||e.type===type));
+      if(occupied[key]){
+        grid.appendChild(cell);
+        continue;
+      }
+
+      // Buscamos el evento que comienza en esta hora
+      const item = scheduleData.find(e => e.day===d && e.start===h && (type==="all"||e.type===type));
       if(item){
         const blocks = blocksBetween(item.start,item.end);
-
         if(!compactMode){
-          for(let b=0;b<blocks;b++) occupied[`${rowIndex+b}-${d}`] = true;
+          for(let b=0; b<blocks; b++) occupied[`${rowIndex+b}-${d}`] = true;
           cell.appendChild(createBar(item, CELL_HEIGHT*blocks-10));
         } else {
-          // En modo compacto, solo una fila con la hora de inicio
+          // Modo compacto: solo mostramos una fila por evento
           cell.appendChild(createBar(item, CELL_HEIGHT-10));
+          for(let b=1; b<blocks; b++) occupied[`${rowIndex+b}-${d}`] = true;
         }
       } else if(compactMode){
-        cell.style.display="none"; // ocultamos celdas vacías
+        // En compacto, solo dejamos la celda vacía para mantener columnas alineadas
+        cell.style.height = "0px";
+        cell.style.border = "none";
       }
 
       grid.appendChild(cell);
     }
   });
 }
+
 
 
 
