@@ -42,6 +42,21 @@ const colors = {
 
 
 // =========================
+// UTILS
+// =========================
+
+function toMinutes(h) {
+    const [HH, MM] = h.split(":").map(Number);
+    return HH * 60 + MM;
+}
+
+// cuántos bloques dura (cada bloque = 30 min)
+function blocksBetween(start, end) {
+    return (toMinutes(end) - toMinutes(start)) / 30;
+}
+
+
+// =========================
 // GRID
 // =========================
 
@@ -49,30 +64,54 @@ function generateGrid() {
     const grid = document.getElementById("grid-content");
     grid.innerHTML = "";
 
-    hours.forEach(h => {
+    // Para marcar celdas que ya están cubiertas por una barra extendida
+    const occupied = {};
+
+    hours.forEach((h, rowIndex) => {
         const hourCell = document.createElement("div");
         hourCell.className = "border p-2 font-semibold text-center bg-[var(--card-bg)]";
         hourCell.textContent = h;
         grid.appendChild(hourCell);
 
         for (let d = 0; d < 7; d++) {
+            const key = `${rowIndex}-${d}`;
+
             const cell = document.createElement("div");
             cell.className = "border min-h-[40px] relative";
 
+            // Si ya está ocupada por una barra que empezó antes, no ponemos nada
+            if (occupied[key]) {
+                grid.appendChild(cell);
+                continue;
+            }
+
+            // Ver si empieza aquí alguna actividad
             const item = scheduleData.find(e =>
                 e.day === d && e.start === h
             );
 
             if (item) {
+                const durationBlocks = blocksBetween(item.start, item.end);
+
                 const div = document.createElement("div");
-                div.className = `schedule-item absolute inset-0 ${colors[item.type]}`;
+                div.className = `schedule-item absolute left-0 right-0 ${colors[item.type]}`;
                 div.textContent = `${item.icon} ${item.title}`;
                 div.dataset.title = item.title;
                 div.dataset.type = item.type;
                 div.dataset.icon = item.icon;
                 div.dataset.desc = item.title;
 
+                // altura = bloques * altura de celda (40px aprox)
+                div.style.top = "0";
+                div.style.height = `${durationBlocks * 40}px`;
+
                 cell.appendChild(div);
+
+                // marcar celdas ocupadas por esta barra
+                for (let i = 0; i < durationBlocks; i++) {
+                    occupied[`${rowIndex + i}-${d}`] = true;
+                }
+
             }
 
             grid.appendChild(cell);
