@@ -75,48 +75,78 @@ function createBar(item,height){
 function generateGrid(type="all"){
   const grid=$("#grid-content");
   grid.innerHTML="";
+
   const occupied={};
 
-  // Si estamos en modo compacto, solo tomamos horas de inicio de los eventos
-  const hoursToRender = compactMode
-    ? Array.from(new Set(scheduleData.filter(e=>type==="all"||e.type===type).map(e=>e.start)))
-    : hours;
+  if(compactMode){
+    // Modo compacto: por cada día, mostramos solo las filas donde hay eventos
+    for(let d=0; d<7; d++){
+      const events = scheduleData.filter(e=>e.day===d && (type==="all"||e.type===type));
+      const dayHours = events.map(e=>e.start);
 
-  hoursToRender.forEach((h,rowIndex)=>{
-    // Hora
-    const hourCell = document.createElement("div");
-    hourCell.className="border p-2 font-semibold text-center hour-cell";
-    hourCell.style.height=`${CELL_HEIGHT}px`;
-    hourCell.textContent=h;
-    grid.appendChild(hourCell);
+      dayHours.forEach((h,rowIndex)=>{
+        // Hora
+        const hourCell = document.createElement("div");
+        hourCell.className="border p-2 font-semibold text-center hour-cell";
+        hourCell.style.height=`${CELL_HEIGHT}px`;
+        hourCell.textContent=h;
+        grid.appendChild(hourCell);
 
-    // Días
-    for(let d=0;d<7;d++){
-      const key=`${rowIndex}-${d}`;
-      const cell=document.createElement("div");
-      cell.className="border min-h-[40px] relative";
-      cell.style.height=`${CELL_HEIGHT}px`;
+        // Celdas para cada día
+        for(let col=0; col<7; col++){
+          const cell=document.createElement("div");
+          cell.className="border min-h-[40px] relative";
+          cell.style.height=`${CELL_HEIGHT}px`;
 
-      if(occupied[key]){
-        grid.appendChild(cell);
-        continue;
-      }
+          if(col===d){
+            const item = events.find(e=>e.start===h);
+            if(item){
+              cell.appendChild(createBar(item,CELL_HEIGHT-10));
+              const blocks = blocksBetween(item.start,item.end);
+              for(let b=0;b<blocks;b++) occupied[`${rowIndex+b}-${d}`]=true;
+            }
+          } else {
+            cell.style.display="none"; // ocultar columnas vacías
+          }
 
-      const item=scheduleData.find(e=>e.day===d && e.start===h && (type==="all"||e.type===type));
-      if(item){
-        const blocks = blocksBetween(item.start,item.end);
-        for(let b=0;b<blocks;b++) occupied[`${rowIndex+b}-${d}`]=true;
-        const height = compactMode ? CELL_HEIGHT-10 : CELL_HEIGHT*blocks-10;
-        cell.appendChild(createBar(item,height));
-      } else if(compactMode){
-        // Ocultar celdas vacías en modo compacto
-        cell.style.display="none";
-      }
-
-      grid.appendChild(cell);
+          grid.appendChild(cell);
+        }
+      });
     }
-  });
+  } else {
+    // Modo normal: filas por cada hora completa
+    hours.forEach((h,rowIndex)=>{
+      const hourCell = document.createElement("div");
+      hourCell.className="border p-2 font-semibold text-center hour-cell";
+      hourCell.style.height=`${CELL_HEIGHT}px`;
+      hourCell.textContent=h;
+      grid.appendChild(hourCell);
+
+      for(let d=0; d<7; d++){
+        const key=`${rowIndex}-${d}`;
+        const cell=document.createElement("div");
+        cell.className="border min-h-[40px] relative";
+        cell.style.height=`${CELL_HEIGHT}px`;
+
+        if(occupied[key]){
+          grid.appendChild(cell);
+          continue;
+        }
+
+        const item=scheduleData.find(e=>e.day===d && e.start===h && (type==="all"||e.type===type));
+        if(item){
+          const blocks = blocksBetween(item.start,item.end);
+          for(let b=0;b<blocks;b++) occupied[`${rowIndex+b}-${d}`]=true;
+          cell.appendChild(createBar(item, CELL_HEIGHT*blocks-10));
+        }
+
+        grid.appendChild(cell);
+      }
+    });
+  }
 }
+
+
 
 // =========================
 // MOBILE LIST
