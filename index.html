@@ -13,16 +13,17 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <!-- Styles -->
     <link rel="stylesheet" href="styles.css" />
 </head>
 
-<body class="antialiased min-h-screen flex flex-col">
+<body class="antialiased min-h-screen flex flex-col bg-[var(--bg)] text-[var(--text)]">
 
     <!-- NAVBAR -->
-    <nav class="sticky top-0 bg-[var(--card-bg)] border-b border-[var(--card-border)] z-20">
+    <nav class="sticky top-0 bg-[var(--card)] border-b border-[var(--border)] z-20 backdrop-blur">
         <div class="max-w-6xl mx-auto px-4 h-16 flex justify-between items-center">
             <h1 class="text-xl font-bold flex items-center gap-2">
                 📅 Mi Organizador Semanal
@@ -52,11 +53,16 @@
 
         <!-- Filtros -->
         <div class="flex gap-2 flex-wrap mb-6">
-            <button class="filter-btn nav-btn border px-3 py-1" data-filter="all" onclick="filterSchedule('all')">Todo</button>
-            <button class="filter-btn nav-btn bg-blue-200 text-blue-800 px-3 py-1" onclick="filterSchedule('academic')">Académico</button>
-            <button class="filter-btn nav-btn bg-rose-200 text-rose-800 px-3 py-1" onclick="filterSchedule('art')">Arte</button>
-            <button class="filter-btn nav-btn bg-emerald-200 text-emerald-800 px-3 py-1" onclick="filterSchedule('study')">Estudio</button>
-            <button class="filter-btn nav-btn bg-orange-200 text-orange-800 px-3 py-1" onclick="filterSchedule('life')">Vida</button>
+            <button class="filter-btn nav-btn border px-3 py-1" data-filter="all"
+                onclick="filterSchedule('all')">Todo</button>
+            <button class="filter-btn nav-btn bg-blue-200 text-blue-800 px-3 py-1"
+                onclick="filterSchedule('academic')">Académico</button>
+            <button class="filter-btn nav-btn bg-rose-200 text-rose-800 px-3 py-1"
+                onclick="filterSchedule('art')">Arte</button>
+            <button class="filter-btn nav-btn bg-emerald-200 text-emerald-800 px-3 py-1"
+                onclick="filterSchedule('study')">Estudio</button>
+            <button class="filter-btn nav-btn bg-orange-200 text-orange-800 px-3 py-1"
+                onclick="filterSchedule('life')">Vida</button>
         </div>
 
         <!-- TABLA -->
@@ -64,12 +70,14 @@
 
             <!-- GRID -->
             <div class="section-card lg:col-span-2 h-[800px] overflow-hidden flex flex-col">
-                <div class="p-4 border-b border-[var(--card-border)] bg-[var(--header-bg)]">
+                <div class="p-4 border-b border-[var(--border)] bg-[var(--header-bg)]">
                     <h3 class="font-semibold">Vista Semanal</h3>
                 </div>
 
                 <div class="overflow-auto flex-grow p-4 schedule-scroll">
                     <div class="grid grid-cols-8 gap-1 min-w-[800px] text-xs">
+
+                        <!-- Encabezados -->
                         <div class="header-cell">Hora</div>
                         <div class="header-day">Domingo</div>
                         <div class="header-day">Lunes</div>
@@ -79,7 +87,9 @@
                         <div class="header-day">Viernes</div>
                         <div class="header-day">Sábado</div>
 
+                        <!-- Contenido dinámico -->
                         <div id="grid-content" class="contents"></div>
+
                     </div>
                 </div>
             </div>
@@ -87,7 +97,7 @@
             <!-- DETALLES -->
             <div class="section-card sticky top-24 h-fit">
                 <h3 class="text-lg font-bold mb-2">Detalles</h3>
-                <div id="detail-content" class="text-sm">
+                <div id="detail-content" class="text-sm opacity-80">
                     Selecciona un bloque.
                 </div>
             </div>
@@ -100,6 +110,7 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
                 <canvas id="balanceChart" class="max-w-sm mx-auto"></canvas>
+
                 <ul class="space-y-3 text-sm">
                     <li>✔ Bloques organizados por día.</li>
                     <li>✔ Colores por categoría.</li>
@@ -110,22 +121,29 @@
 
     </main>
 
-    <footer class="py-8 text-center">Hecho con ❤️</footer>
+    <footer class="py-8 text-center opacity-70">Hecho con ❤️</footer>
 
     <!-- Scripts -->
     <script src="script.js"></script>
 
+    <!-- MODO OSCURO -->
     <script>
         if (localStorage.theme === "dark" ||
             (!localStorage.theme && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
             document.documentElement.classList.add("dark");
         }
+
         function toggleDarkMode() {
             document.documentElement.classList.toggle("dark");
             localStorage.theme =
                 document.documentElement.classList.contains("dark") ? "dark" : "light";
         }
+
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: "smooth" });
+        }
     </script>
 
 </body>
+
 </html>

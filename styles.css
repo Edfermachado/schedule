@@ -1,107 +1,108 @@
-/* =======================================
-   BASE & VARIABLES
-======================================= */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
-:root {
-    --bg: #f5f5f4;
-    --text: #1c1917;
-    --text-soft: #57534e;
-    --card-bg: #ffffff;
-    --card-border: #e7e5e4;
-    --scroll-thumb: #d6d3d1;
-    --header-bg: #e7e5e4;
-}
-
-.dark {
-    --bg: #0b0b0b;
-    --text: #e7e5e4;
-    --text-soft: #a8a29e;
-    --card-bg: #151515;
-    --card-border: #262626;
-    --scroll-thumb: #3b3b3b;
-    --header-bg: #1f1f1f;
-}
 
 body {
     font-family: 'Inter', sans-serif;
     background: var(--bg);
     color: var(--text);
-    transition: background .3s ease, color .3s ease;
+    margin: 0;
+    padding: 1rem;
 }
 
-/* =======================================
-   COMPONENTES
-======================================= */
+/* VARIABLES */
+:root {
+    --bg: #fafaf9;
+    --text: #44403c;
+    --card: white;
+    --border: #e7e5e4;
+    --scroll: #d6d3d1;
+    --header-bg: #f5f5f4;
+}
+
+/* MODO OSCURO */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #181818;
+        --text: #e7e7e7;
+        --card: #222;
+        --border: #333;
+        --scroll: #444;
+        --header-bg: #2a2a2a;
+    }
+}
+
+/* TARJETAS */
 .section-card {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: .75rem;
-    padding: 1.5rem;
-    transition: background .3s ease, border .3s ease;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    box-shadow: 0 4px 10px -2px rgba(0,0,0,0.1);
 }
 
-.section-title {
-    font-size: 1.5rem;
+/* TABLA */
+.schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.schedule-table td,
+.schedule-table th {
+    border: 1px solid var(--border);
+    padding: 0.5rem;
+    text-align: center;
+}
+
+/* Encabezados */
+.header-day {
+    background: var(--header-bg);
     font-weight: 700;
-    color: var(--text);
 }
 
-.section-text {
-    color: var(--text-soft);
-    line-height: 1.6;
+.header-hour {
+    font-weight: bold;
+    color: #a8a29e;
 }
 
-.nav-btn {
-    color: var(--text-soft);
-    padding: .5rem .75rem;
-    border-radius: .5rem;
-    transition: color .25s ease;
-}
-.nav-btn:hover {
-    color: var(--text);
+@media (prefers-color-scheme: dark) {
+    .header-hour {
+        color: #bbb;
+    }
 }
 
-/* Scroll */
+/* SCROLL */
 .schedule-scroll::-webkit-scrollbar {
     height: 8px;
     width: 8px;
 }
 .schedule-scroll::-webkit-scrollbar-thumb {
-    background: var(--scroll-thumb);
+    background: var(--scroll);
     border-radius: 4px;
 }
 
-/* Header */
-.header-day {
-    background: var(--header-bg);
-    font-weight: 600;
-    text-align: center;
-    padding: .5rem;
-    border-radius: .25rem;
-}
-
-.header-cell {
-    color: var(--text-soft);
-    font-weight: 700;
-    text-align: center;
-}
-
-/* Item */
-.schedule-item {
-    backdrop-filter: blur(6px);
-    border-radius: .5rem;
-    padding: .25rem;
-    font-size: .7rem;
+/* BOTÓN GENERAL */
+.btn-dark {
+    background: #444;
+    color: white;
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 0.5rem;
     cursor: pointer;
+    font-weight: 600;
+}
+.btn-dark:hover {
+    background: #555;
 }
 
-/* Detalles */
-#detail-content {
-    color: var(--text-soft);
+/* ---------------------------------------------------------- */
+/*  NUEVO: CLASE PARA OCULTAR FILAS VACÍAS                   */
+/* ---------------------------------------------------------- */
+.hidden-row {
+    display: none !important;
 }
 
-/* Footer */
-footer {
-    color: var(--text-soft);
+/* Cuando la tabla está minimizada */
+.compact-hour {
+    background: var(--header-bg);
+    color: var(--text);
+    font-weight: 600;
 }

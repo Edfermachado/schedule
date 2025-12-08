@@ -32,7 +32,7 @@ const scheduleData = [
     { day: 6, start: "08:30", end: "12:00", title: "Redes I", type: "academic", icon: "🌐" }
 ];
 
-// Colores
+// Colores por categoría
 const colors = {
     academic: "bg-blue-200 text-blue-900",
     art: "bg-rose-200 text-rose-900",
@@ -50,22 +50,26 @@ function generateGrid() {
     grid.innerHTML = "";
 
     hours.forEach(h => {
+        // Fila completa = 1 hora + 7 días
+        const row = document.createElement("div");
+        row.className = "schedule-row contents"; // marca para minimizado
+
+        // Columna de hora
         const hourCell = document.createElement("div");
         hourCell.className = "border p-2 font-semibold text-center bg-[var(--card-bg)]";
         hourCell.textContent = h;
-        grid.appendChild(hourCell);
+        row.appendChild(hourCell);
 
+        // 7 días
         for (let d = 0; d < 7; d++) {
             const cell = document.createElement("div");
-            cell.className = "border min-h-[40px] relative";
+            cell.className = "border min-h-[40px] relative schedule-block";
 
-            const item = scheduleData.find(e =>
-                e.day === d && e.start === h
-            );
+            const item = scheduleData.find(e => e.day === d && e.start === h);
 
             if (item) {
                 const div = document.createElement("div");
-                div.className = `schedule-item absolute inset-0 ${colors[item.type]}`;
+                div.className = `schedule-item absolute inset-0 flex items-center justify-center text-xs p-1 ${colors[item.type]}`;
                 div.textContent = `${item.icon} ${item.title}`;
                 div.dataset.title = item.title;
                 div.dataset.type = item.type;
@@ -75,8 +79,10 @@ function generateGrid() {
                 cell.appendChild(div);
             }
 
-            grid.appendChild(cell);
+            row.appendChild(cell);
         }
+
+        grid.appendChild(row);
     });
 
     enableDetails();
@@ -140,6 +146,30 @@ function loadChart() {
             }]
         },
         options: { responsive: true }
+    });
+}
+
+
+// =========================
+// MINIMIZAR BLOQUES VACÍOS
+// =========================
+
+let compactMode = false;
+
+function toggleEmptyRows() {
+    compactMode = !compactMode;
+
+    const rows = document.querySelectorAll(".schedule-row");
+
+    rows.forEach(row => {
+        const blocks = row.querySelectorAll(".schedule-block");
+        const hasContent = [...blocks].some(b =>
+            b.querySelector(".schedule-item")
+        );
+
+        if (!hasContent) {
+            row.classList.toggle("hidden-row", compactMode);
+        }
     });
 }
 
