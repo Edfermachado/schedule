@@ -77,7 +77,12 @@ function generateGrid(type="all"){
   grid.innerHTML="";
   const occupied={};
 
-  hours.forEach((h,rowIndex)=>{
+  // Si estamos en modo compacto, solo tomamos horas que tengan eventos
+  const hoursToRender = compactMode
+    ? Array.from(new Set(scheduleData.filter(e=>type==="all"||e.type===type).map(e=>e.start)))
+    : hours;
+
+  hoursToRender.forEach((h,rowIndex)=>{
     // hora
     const hourCell = document.createElement("div");
     hourCell.className="border p-2 font-semibold text-center hour-cell";
@@ -92,13 +97,6 @@ function generateGrid(type="all"){
       cell.className="border min-h-[40px] relative";
       cell.style.height=`${CELL_HEIGHT}px`;
 
-      if(compactMode){
-        const item=scheduleData.find(e=>e.day===d && e.start===h && (type==="all"||e.type===type));
-        if(item) cell.appendChild(createBar(item,CELL_HEIGHT-10));
-        grid.appendChild(cell);
-        continue;
-      }
-
       if(occupied[key]){
         grid.appendChild(cell);
         continue;
@@ -109,6 +107,9 @@ function generateGrid(type="all"){
         const blocks = blocksBetween(item.start,item.end);
         for(let b=0;b<blocks;b++) occupied[`${rowIndex+b}-${d}`]=true;
         cell.appendChild(createBar(item,CELL_HEIGHT*blocks-10));
+      } else if(compactMode){
+        // Si estamos en compacto y la celda está vacía, la ocultamos
+        cell.style.display="none";
       }
 
       grid.appendChild(cell);
