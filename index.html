@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -17,6 +18,7 @@
     <!-- Estilos personalizados -->
     <link rel="stylesheet" href="styles.css" />
 </head>
+
 <body class="antialiased min-h-screen flex flex-col bg-stone-50 text-stone-700">
 
     <!-- NAVBAR -->
@@ -29,8 +31,13 @@
             <div class="flex items-center space-x-4">
                 <button onclick="scrollToSection('schedule')" class="nav-btn">Horario</button>
                 <button onclick="scrollToSection('stats')" class="nav-btn">Balance</button>
+                <button onclick="toggleDarkMode()" class="nav-btn">
+                    <i class="fas fa-moon"></i>
+                </button>
+
             </div>
         </div>
+
     </nav>
 
     <!-- CONTENIDO PRINCIPAL -->
@@ -40,16 +47,19 @@
         <section class="section-card mb-8">
             <h2 class="section-title">Resumen de tu Rutina</h2>
             <p class="section-text">
-                Este panel interactivo digitaliza tu horario semanal. Selecciona un bloque para ver sus detalles y usa los filtros para enfocarte en cada categoría.
+                Este panel interactivo digitaliza tu horario semanal. Selecciona un bloque para ver sus detalles y usa
+                los filtros para enfocarte en cada categoría.
             </p>
         </section>
 
         <!-- FILTROS -->
         <div class="flex flex-wrap gap-2 mb-6" id="filters">
             <button class="filter-btn active" onclick="filterSchedule('all')" data-filter="all">Todo</button>
-            <button class="filter-btn bg-blue-100 text-blue-800" onclick="filterSchedule('academic')">🎓 Académico</button>
+            <button class="filter-btn bg-blue-100 text-blue-800" onclick="filterSchedule('academic')">🎓
+                Académico</button>
             <button class="filter-btn bg-rose-100 text-rose-800" onclick="filterSchedule('art')">🎭 Arte/Teatro</button>
-            <button class="filter-btn bg-emerald-100 text-emerald-800" onclick="filterSchedule('study')">📚 Estudio</button>
+            <button class="filter-btn bg-emerald-100 text-emerald-800" onclick="filterSchedule('study')">📚
+                Estudio</button>
             <button class="filter-btn bg-orange-100 text-orange-800" onclick="filterSchedule('life')">🧘 Vida</button>
         </div>
 
@@ -120,5 +130,22 @@
 
     <!-- SCRIPTS -->
     <script src="script.js"></script>
+
+    <script>
+        // Detectar preferencia del usuario
+        if (localStorage.theme === "dark" ||
+            (!localStorage.theme && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+            document.documentElement.classList.add("dark");
+        }
+
+        function toggleDarkMode() {
+            const html = document.documentElement;
+
+            html.classList.toggle("dark");
+            localStorage.theme = html.classList.contains("dark") ? "dark" : "light";
+        }
+    </script>
+
 </body>
+
 </html>

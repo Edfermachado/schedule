@@ -1,26 +1,87 @@
+/* =======================================
+   BASE & VARIABLES
+======================================= */
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --bg: #fafaf9;
+    --text: #44403c;
+    --text-soft: #57534e;
+    --card-bg: white;
+    --card-border: #e7e5e4;
+    --scroll-thumb: #d6d3d1;
+    --header-bg: #f5f5f4;
+}
+
+.dark {
+    --bg: #0d0d0d;
+    --text: #e7e5e4;
+    --text-soft: #a8a29e;
+    --card-bg: #1a1a1a;
+    --card-border: #2d2d2d;
+    --scroll-thumb: #3b3b3b;
+    --header-bg: #262626;
+}
 
 body {
     font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    transition: background 0.25s ease, color 0.25s ease;
 }
+
+/* =======================================
+   COMPONENTES
+======================================= */
 
 /* Tarjetas */
 .section-card {
-    background: white;
-    border: 1px solid #e7e5e4;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
     border-radius: 0.75rem;
     box-shadow: 0 4px 10px -2px rgba(0,0,0,0.05);
+    transition: background 0.25s ease, border 0.25s ease;
 }
 
 .section-title {
     font-size: 1.5rem;
     font-weight: 700;
-    color: #44403c;
+    color: var(--text);
 }
 
 .section-text {
-    color: #57534e;
+    color: var(--text-soft);
     line-height: 1.6;
+}
+
+/* Navbar button */
+.nav-btn {
+    color: var(--text-soft);
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    transition: color 0.2s ease;
+}
+
+.nav-btn:hover {
+    color: var(--text);
+}
+
+/* Header cells */
+.header-day {
+    background: var(--header-bg);
+    text-align: center;
+    font-weight: 600;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    transition: background 0.25s ease;
+}
+
+.header-cell {
+    color: var(--text-soft);
+    font-weight: bold;
+    text-align: center;
+    padding: 0.5rem;
 }
 
 /* Scroll */
@@ -29,33 +90,26 @@ body {
     width: 8px;
 }
 .schedule-scroll::-webkit-scrollbar-thumb {
-    background: #d6d3d1;
+    background: var(--scroll-thumb);
     border-radius: 4px;
 }
 
-/* Navbar button */
-.nav-btn {
-    color: #44403c;
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.5rem;
+/* Schedule grid fondo */
+#grid-content > div {
+    transition: background 0.25s ease;
 }
 
-.nav-btn:hover {
-    color: black;
+/* Items */
+.schedule-item {
+    backdrop-filter: blur(4px);
 }
 
-/* Header cells */
-.header-day {
-    background: #f5f5f4;
-    text-align: center;
-    font-weight: 600;
-    padding: 0.5rem;
-    border-radius: 0.25rem;
+/* Detalles */
+#detail-content {
+    color: var(--text-soft);
 }
 
-.header-cell {
-    color: #a8a29e;
-    font-weight: bold;
-    text-align: center;
-    padding: 0.5rem;
+/* Footer */
+footer {
+    color: var(--text-soft);
 }
