@@ -1,4 +1,7 @@
-// Configuración de Datos Mejorada
+// =========================
+// CONFIGURACIÓN DE DATOS
+// =========================
+const days = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 const hours = [
   "07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00"
 ];
@@ -15,17 +18,23 @@ const scheduleData = [
   { day:6, start:"08:30", end:"12:00", title:"Redes I", type:"academic", icon:"🌐", desc: "Práctica de ruteo" }
 ];
 
-const CELL_HEIGHT = 60;
+const CELL_HEIGHT = 64;
 let compactMode = false;
+let currentFilter = "all";
 
-// Helpers
+// =========================
+// HELPERS
+// =========================
 const toMinutes = h => h.split(':').reduce((h, m) => h * 60 + +m);
 const blocksBetween = (start, end) => (toMinutes(end) - toMinutes(start)) / 60;
 
+// =========================
+// LÓGICA DE DETALLES
+// =========================
 function showDetail(item) {
   const content = document.getElementById('detail-content');
   content.innerHTML = `
-    <div class="bg-${item.type} p-3 rounded-xl mb-4 text-white font-bold inline-block shadow-md">
+    <div class="bg-academic p-3 rounded-xl mb-4 text-white font-bold inline-block shadow-md" style="background: var(--primary)">
       ${item.icon} ${item.type.toUpperCase()}
     </div>
     <h2 class="text-xl font-extrabold mb-1">${item.title}</h2>
@@ -34,25 +43,66 @@ function showDetail(item) {
   `;
 }
 
+// =========================
+// RENDERIZADO MÓVIL (LISTA)
+// =========================
+function generateMobileList(filter = "all") {
+  const container = document.getElementById('list-wrapper');
+  container.innerHTML = "";
+  
+  days.forEach((dayName, dayIdx) => {
+    const events = scheduleData.filter(e => e.day === dayIdx && (filter === "all" || e.type === filter));
+    
+    if (events.length > 0) {
+      const daySection = document.createElement('div');
+      daySection.className = "mb-6";
+      daySection.innerHTML = `<h4 class="font-bold text-xs uppercase tracking-widest opacity-50 mb-3">${dayName}</h4>`;
+      
+      events.sort((a,b) => toMinutes(a.start) - toMinutes(b.start)).forEach(item => {
+        const card = document.createElement('div');
+        card.className = "glass p-4 rounded-2xl mb-2 flex items-center justify-between border border-white/10";
+        card.onclick = () => showDetail(item);
+        card.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="text-2xl">${item.icon}</span>
+            <div>
+              <div class="font-bold text-sm">${item.title}</div>
+              <div class="text-[10px] opacity-60">${item.start} - ${item.end}</div>
+            </div>
+          </div>
+          <i class="fas fa-chevron-right opacity-30 text-xs"></i>
+        `;
+        daySection.appendChild(card);
+      });
+      container.appendChild(daySection);
+    }
+  });
+}
+
+// =========================
+// RENDERIZADO DESKTOP (GRID)
+// =========================
 function generateGrid(filter = "all") {
   const container = document.getElementById('grid-content');
   container.innerHTML = "";
   
-  hours.forEach((h, rowIndex) => {
-    // Hora lateral
+  // Determinar qué horas mostrar (si está compactado, solo horas con eventos)
+  const hoursToRender = compactMode 
+    ? hours.filter(h => scheduleData.some(e => e.start.startsWith(h.substring(0,2)) && (filter === "all" || e.type === filter)))
+    : hours;
+
+  hoursToRender.forEach((h) => {
     const hourLabel = document.createElement('div');
     hourLabel.className = "header-cell flex items-center justify-center border-b border-white/5";
     hourLabel.style.height = `${CELL_HEIGHT}px`;
     hourLabel.textContent = h;
     container.appendChild(hourLabel);
 
-    // Celdas por día
     for(let d=0; d<7; d++) {
       const cell = document.createElement('div');
       cell.className = "border-b border-r border-white/5 relative bg-white/5";
       cell.style.height = `${CELL_HEIGHT}px`;
 
-      // Evento que inicia a esta hora
       const item = scheduleData.find(e => e.day === d && e.start.startsWith(h.substring(0,2)) && (filter === "all" || e.type === filter));
       
       if(item) {
@@ -60,7 +110,7 @@ function generateGrid(filter = "all") {
         const bar = document.createElement('div');
         bar.className = `schedule-item bg-${item.type}`;
         bar.style.height = `${height - 8}px`;
-        bar.innerHTML = `<i class="text-lg mb-1">${item.icon}</i><span>${item.title}</span>`;
+        bar.innerHTML = `<i class="text-lg mb-1">${item.icon}</i><span class="px-1 text-center">${item.title}</span>`;
         bar.onclick = () => showDetail(item);
         cell.appendChild(bar);
       }
@@ -69,9 +119,30 @@ function generateGrid(filter = "all") {
   });
 }
 
+// =========================
+// CONTROLES
+// =========================
+function renderAll() {
+  if (window.innerWidth < 768) {
+    generateMobileList(currentFilter);
+  } else {
+    generateGrid(currentFilter);
+  }
+}
+
 function filterSchedule(type) {
+  currentFilter = type;
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === type));
-  generateGrid(type);
+  renderAll();
+}
+
+function toggleEmptyRows() {
+  compactMode = !compactMode;
+  const btn = document.getElementById('minimizeBtn');
+  btn.innerHTML = compactMode 
+    ? `<i class="fas fa-expand-alt mr-1"></i> Expandir` 
+    : `<i class="fas fa-compress-alt mr-1"></i> Compactar`;
+  renderAll();
 }
 
 function toggleDarkMode() {
@@ -79,12 +150,15 @@ function toggleDarkMode() {
   localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
 }
 
-// Inicialización
+// =========================
+// INICIALIZACIÓN
+// =========================
 window.onload = () => {
   if (localStorage.theme === 'dark') document.documentElement.classList.add('dark');
-  generateGrid();
   
-  // Render Chart
+  renderAll();
+  
+  // Chart.js initialization
   const ctx = document.getElementById('balanceChart').getContext('2d');
   new Chart(ctx, {
     type: 'doughnut',
@@ -105,3 +179,6 @@ window.onload = () => {
 
   document.getElementById('darkToggle').onclick = toggleDarkMode;
 };
+
+// Escuchar cambios de tamaño para cambiar entre lista y grid
+window.onresize = renderAll;
