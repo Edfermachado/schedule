@@ -3,42 +3,28 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Planificador Semanal — Glass Modern</title>
-
-  <!-- Tailwind (rápido) -->
+  <title>Planificador Semanal — Glass Edition</title>
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <!-- Icons -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-
-  <!-- Styles -->
   <link rel="stylesheet" href="styles.css">
 </head>
-<body class="antialiased min-h-screen bg-[var(--bg)] text-[var(--text)]">
+<body class="antialiased min-h-screen">
 
-  <!-- NAV -->
-  <header class="sticky top-0 z-30">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-4 backdrop-blur glass-nav">
+  <header class="sticky top-0 z-40 px-4 pt-4">
+    <div class="max-w-6xl mx-auto glass-nav flex items-center justify-between px-6 py-3">
       <div class="flex items-center gap-3">
-        <span class="text-2xl">📅</span>
+        <div class="bg-gradient-to-br from-blue-500 to-purple-600 p-2 rounded-xl shadow-lg">
+          <i class="fas fa-calendar-alt text-white text-xl"></i>
+        </div>
         <div>
-          <div class="text-lg font-semibold">Mi Organizador Semanal</div>
-          <div class="text-xs text-[var(--text-soft)]">Glass Modern • Responsive</div>
+          <h1 class="text-lg font-bold tracking-tight leading-none">Mi Agenda</h1>
+          <span class="text-[10px] uppercase tracking-widest opacity-50 font-bold">Glass UI v2.0</span>
         </div>
       </div>
 
-      <div class="flex items-center gap-3">
-        <button class="nav-btn" onclick="scrollToSection('schedule')" aria-label="Ir a horario">Horario</button>
-        <button class="nav-btn" onclick="scrollToSection('stats')" aria-label="Ir a estadísticas">Balance</button>
-
-        <button id="minimizeBtn" class="nav-btn" onclick="toggleEmptyRows()" aria-pressed="false" aria-label="Minimizar filas vacías">
-          <i id="minimizeIcon" class="fas fa-compress-arrows-alt"></i>
-        </button>
-
-        <button id="darkToggle" class="nav-btn" aria-pressed="false" aria-label="Cambiar modo oscuro">
+      <div class="flex items-center gap-2">
+        <button id="darkToggle" class="nav-btn-icon" title="Cambiar Tema">
           <i class="fas fa-moon"></i>
         </button>
       </div>
@@ -46,73 +32,65 @@
   </header>
 
   <main class="max-w-6xl mx-auto px-4 py-8">
-    <!-- Intro -->
-    <section class="section-card mb-6 glass">
-      <h2 class="section-title">Resumen</h2>
-      <p class="section-text">Vista moderna tipo glass. Toca una barra para ver detalles. En móvil verás una lista compacta por día.</p>
-    </section>
-
-    <!-- Controls -->
-    <div class="flex gap-2 flex-wrap items-center mb-4">
-      <button class="filter-btn nav-btn border px-3 py-1 active" data-filter="all" onclick="filterSchedule('all')">Todo</button>
-      <button class="filter-btn nav-btn px-3 py-1" onclick="filterSchedule('academic')" style="background:var(--accent-blue-bg);color:var(--accent-blue)">Académico</button>
-      <button class="filter-btn nav-btn px-3 py-1" onclick="filterSchedule('art')" style="background:var(--accent-pink-bg);color:var(--accent-pink)">Arte</button>
-      <button class="filter-btn nav-btn px-3 py-1" onclick="filterSchedule('study')" style="background:var(--accent-green-bg);color:var(--accent-green)">Estudio</button>
-      <button class="filter-btn nav-btn px-3 py-1" onclick="filterSchedule('life')" style="background:var(--accent-orange-bg);color:var(--accent-orange)">Vida</button>
+    <div class="flex gap-2 overflow-x-auto pb-4 no-scrollbar items-center mb-6">
+      <button class="filter-btn active" data-filter="all" onclick="filterSchedule('all')">Todo</button>
+      <button class="filter-btn academic" data-filter="academic" onclick="filterSchedule('academic')">Académico</button>
+      <button class="filter-btn art" data-filter="art" onclick="filterSchedule('art')">Arte</button>
+      <button class="filter-btn study" data-filter="study" onclick="filterSchedule('study')">Estudio</button>
+      <button class="filter-btn life" data-filter="life" onclick="filterSchedule('life')">Vida</button>
     </div>
 
-    <!-- Main layout -->
-    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-
-      <!-- GRID (desktop) / LIST (mobile) -->
-      <div class="lg:col-span-2 section-card p-0 glass">
-        <div class="p-4 border-b border-[var(--card-border)] bg-[var(--header-bg)]">
-          <h3 class="font-semibold">Vista Semanal</h3>
-        </div>
-
-        <div class="overflow-auto p-4 schedule-scroll" id="schedule">
-          <!-- Grid rendering goes into #grid-content (desktop) -->
-          <div id="grid-wrapper" class="hidden md:block">
-            <div class="grid grid-cols-8 gap-1 min-w-[800px] text-xs">
-              <div class="header-cell">Hora</div>
-              <div class="header-day">Domingo</div>
-              <div class="header-day">Lunes</div>
-              <div class="header-day">Martes</div>
-              <div class="header-day">Miércoles</div>
-              <div class="header-day">Jueves</div>
-              <div class="header-day">Viernes</div>
-              <div class="header-day">Sábado</div>
-
-              <div id="grid-content" class="contents w-full"></div>
-            </div>
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      
+      <div class="lg:col-span-3">
+        <div class="section-card glass overflow-hidden">
+          <div class="p-4 border-b border-white/10 flex justify-between items-center bg-white/5">
+            <h3 class="font-bold flex items-center gap-2">
+              <i class="fas fa-columns text-blue-400"></i> Horario Semanal
+            </h3>
+            <button id="minimizeBtn" class="text-xs font-bold uppercase tracking-wider opacity-60 hover:opacity-100 transition" onclick="toggleEmptyRows()">
+              <i class="fas fa-compress-alt mr-1"></i> Compactar
+            </button>
           </div>
 
-          <!-- Compact list for mobile -->
-          <div id="list-wrapper" class="md:hidden space-y-4">
-            <!-- JS fills this -->
+          <div class="overflow-auto schedule-scroll" id="schedule">
+            <div id="grid-wrapper" class="hidden md:block p-4">
+              <div class="grid grid-cols-8 gap-2 min-w-[850px]">
+                <div class="header-cell">Hora</div>
+                <div class="header-day">Dom</div>
+                <div class="header-day">Lun</div>
+                <div class="header-day">Mar</div>
+                <div class="header-day">Mié</div>
+                <div class="header-day">Jue</div>
+                <div class="header-day">Vie</div>
+                <div class="header-day">Sáb</div>
+                <div id="grid-content" class="contents"></div>
+              </div>
+            </div>
+            <div id="list-wrapper" class="md:hidden p-4 space-y-4"></div>
           </div>
         </div>
       </div>
 
-      <!-- DETAILS + STATS -->
-      <aside class="section-card sticky top-24 h-fit glass" id="stats">
-        <h3 class="text-lg font-bold mb-2">Detalles</h3>
-        <div id="detail-content" class="text-sm text-[var(--text-soft)]">Selecciona un bloque.</div>
-
-        <hr class="my-4 border-[var(--card-border)]">
-
-        <h4 class="font-semibold mb-2">Distribución</h4>
-        <div class="w-full">
-          <canvas id="balanceChart"></canvas>
+      <aside class="space-y-6">
+        <div class="section-card glass p-6 sticky top-24">
+          <h3 class="text-sm font-bold uppercase tracking-widest opacity-50 mb-4 text-center">Detalles</h3>
+          <div id="detail-content" class="min-h-[100px] flex flex-col justify-center items-center text-center italic opacity-60 text-sm px-4">
+            Toca una actividad para ver información detallada
+          </div>
+          
+          <hr class="my-6 border-white/10">
+          
+          <h3 class="text-sm font-bold uppercase tracking-widest opacity-50 mb-4 text-center">Distribución</h3>
+          <div class="relative h-48">
+            <canvas id="balanceChart"></canvas>
+          </div>
         </div>
       </aside>
 
-    </section>
-
-    <footer class="text-center text-sm text-[var(--text-soft)] py-6">Hecho con ❤️ — Glass Modern</footer>
+    </div>
   </main>
 
-  <!-- Script -->
   <script src="script.js"></script>
 </body>
 </html>

@@ -1,258 +1,107 @@
-// =========================
-// CONFIG
-// =========================
-const days = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+// Configuración de Datos Mejorada
 const hours = [
-  "07:00","07:30","08:00","08:30","09:00","09:30","10:00","10:30",
-  "11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30",
-  "15:00","15:30","16:00","16:30","17:00","17:30","18:00","18:30",
-  "19:00","19:30","20:00"
+  "07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00"
 ];
 
 const scheduleData = [
-  { day:0, start:"13:00", end:"17:00", title:"Teatro", type:"art", icon:"🎭" },
-  { day:1, start:"17:00", end:"19:00", title:"Lenguaje de Programación", type:"academic", icon:"💻" },
-  { day:2, start:"07:30", end:"10:30", title:"Probabilidad", type:"academic", icon:"🔢" },
-  { day:2, start:"15:00", end:"16:30", title:"Inglés", type:"academic", icon:"🇬🇧" },
-  { day:3, start:"10:30", end:"12:00", title:"Metodología", type:"academic", icon:"📝" },
-  { day:4, start:"07:30", end:"10:30", title:"Probabilidad", type:"academic", icon:"🔢" },
-  { day:4, start:"15:00", end:"16:30", title:"Inglés", type:"academic", icon:"🇬🇧" },
-  { day:4, start:"18:00", end:"20:00", title:"Ingeniería de Software", type:"academic", icon:"💻" },
-  { day:6, start:"08:30", end:"12:00", title:"Redes I", type:"academic", icon:"🌐" }
+  { day:0, start:"13:00", end:"17:00", title:"Teatro", type:"art", icon:"🎭", desc: "Clase de actuación" },
+  { day:1, start:"17:00", end:"19:00", title:"Lenguaje Prog", type:"academic", icon:"💻", desc: "Laboratorio C++" },
+  { day:2, start:"07:30", end:"10:30", title:"Probabilidad", type:"academic", icon:"🔢", desc: "Aula 302" },
+  { day:2, start:"15:00", end:"16:30", title:"Inglés", type:"academic", icon:"🇬🇧", desc: "Zoom ID: 231..." },
+  { day:3, start:"10:30", end:"12:00", title:"Metodología", type:"academic", icon:"📝", desc: "Teoría" },
+  { day:4, start:"07:30", end:"10:30", title:"Probabilidad", type:"academic", icon:"🔢", desc: "Aula 302" },
+  { day:4, start:"15:00", end:"16:30", title:"Inglés", type:"academic", icon:"🇬🇧", desc: "Conversación" },
+  { day:4, start:"18:00", end:"20:00", title:"Ing Software", type:"academic", icon:"💻", desc: "Sprint 2" },
+  { day:6, start:"08:30", end:"12:00", title:"Redes I", type:"academic", icon:"🌐", desc: "Práctica de ruteo" }
 ];
 
-const categoryClass = {
-  academic: "bg-academic",
-  art: "bg-art",
-  study: "bg-study",
-  life: "bg-life"
-};
-
-const CELL_HEIGHT = 48;
+const CELL_HEIGHT = 60;
 let compactMode = false;
 
-// =========================
-// UTIL
-// =========================
-const $ = sel => document.querySelector(sel);
-const $$ = sel => Array.from(document.querySelectorAll(sel));
+// Helpers
+const toMinutes = h => h.split(':').reduce((h, m) => h * 60 + +m);
+const blocksBetween = (start, end) => (toMinutes(end) - toMinutes(start)) / 60;
 
-function toMinutes(h){
-  const [H,M]=h.split(":").map(Number);
-  return H*60+M;
-}
-function blocksBetween(start,end){
-  return Math.round((toMinutes(end)-toMinutes(start))/30);
-}
-
-// =========================
-// MINIMIZE MODE
-// =========================
-function toggleEmptyRows(){
-  compactMode = !compactMode;
-  $("#minimizeBtn").setAttribute("aria-pressed",compactMode);
-  $("#minimizeIcon").classList.toggle("fa-expand-arrows-alt",!compactMode);
-  $("#minimizeIcon").classList.toggle("fa-compress-arrows-alt",compactMode);
-  renderAll();
+function showDetail(item) {
+  const content = document.getElementById('detail-content');
+  content.innerHTML = `
+    <div class="bg-${item.type} p-3 rounded-xl mb-4 text-white font-bold inline-block shadow-md">
+      ${item.icon} ${item.type.toUpperCase()}
+    </div>
+    <h2 class="text-xl font-extrabold mb-1">${item.title}</h2>
+    <p class="text-blue-500 font-bold mb-3">${item.start} — ${item.end}</p>
+    <p class="text-sm opacity-70">${item.desc}</p>
+  `;
 }
 
-// =========================
-// CREATE BAR
-// =========================
-function createBar(item,height){
-  const div = document.createElement("div");
-  div.className=`schedule-item ${categoryClass[item.type]}`;
-  div.style.height=`${height}px`;
-  div.title=`${item.title} (${item.start}-${item.end})`;
-  div.innerHTML=`<span class="icon">${item.icon}</span> <span>${item.title}</span>`;
-  div.onclick = ()=>showDetail(item);
-  return div;
-}
+function generateGrid(filter = "all") {
+  const container = document.getElementById('grid-content');
+  container.innerHTML = "";
+  
+  hours.forEach((h, rowIndex) => {
+    // Hora lateral
+    const hourLabel = document.createElement('div');
+    hourLabel.className = "header-cell flex items-center justify-center border-b border-white/5";
+    hourLabel.style.height = `${CELL_HEIGHT}px`;
+    hourLabel.textContent = h;
+    container.appendChild(hourLabel);
 
-// =========================
-// GRID MODE (DESKTOP)
-// =========================
-function generateGrid(type="all") {
-  const grid = $("#grid-content");
-  grid.innerHTML = "";
-  const occupied = {};
-
-  // Iteramos todas las horas
-  const hoursToRender = compactMode
-    ? Array.from(new Set(scheduleData.filter(e => type==="all"||e.type===type).map(e => e.start))).sort((a,b)=>toMinutes(a)-toMinutes(b))
-    : hours;
-
-  hoursToRender.forEach((h,rowIndex)=>{
-    // Hora
-    const hourCell = document.createElement("div");
-    hourCell.className = "border p-2 font-semibold text-center hour-cell";
-    hourCell.style.height = `${CELL_HEIGHT}px`;
-    hourCell.textContent = h;
-    grid.appendChild(hourCell);
-
-    // Generamos columnas por día
-    for(let d=0; d<7; d++){
-      const key = `${rowIndex}-${d}`;
-      const cell = document.createElement("div");
-      cell.className = "border min-h-[40px] relative";
+    // Celdas por día
+    for(let d=0; d<7; d++) {
+      const cell = document.createElement('div');
+      cell.className = "border-b border-r border-white/5 relative bg-white/5";
       cell.style.height = `${CELL_HEIGHT}px`;
 
-      if(occupied[key]){
-        grid.appendChild(cell);
-        continue;
+      // Evento que inicia a esta hora
+      const item = scheduleData.find(e => e.day === d && e.start.startsWith(h.substring(0,2)) && (filter === "all" || e.type === filter));
+      
+      if(item) {
+        const height = blocksBetween(item.start, item.end) * CELL_HEIGHT;
+        const bar = document.createElement('div');
+        bar.className = `schedule-item bg-${item.type}`;
+        bar.style.height = `${height - 8}px`;
+        bar.innerHTML = `<i class="text-lg mb-1">${item.icon}</i><span>${item.title}</span>`;
+        bar.onclick = () => showDetail(item);
+        cell.appendChild(bar);
       }
-
-      // Buscamos el evento que comienza en esta hora
-      const item = scheduleData.find(e => e.day===d && e.start===h && (type==="all"||e.type===type));
-      if(item){
-        const blocks = blocksBetween(item.start,item.end);
-        if(!compactMode){
-          for(let b=0; b<blocks; b++) occupied[`${rowIndex+b}-${d}`] = true;
-          cell.appendChild(createBar(item, CELL_HEIGHT*blocks-10));
-        } else {
-          // Modo compacto: solo mostramos una fila por evento
-          cell.appendChild(createBar(item, CELL_HEIGHT-10));
-          for(let b=1; b<blocks; b++) occupied[`${rowIndex+b}-${d}`] = true;
-        }
-      } else if(compactMode){
-        // En compacto, solo dejamos la celda vacía para mantener columnas alineadas
-        cell.style.height = "0px";
-        cell.style.border = "none";
-      }
-
-      grid.appendChild(cell);
+      container.appendChild(cell);
     }
   });
 }
 
-
-
-
-
-// =========================
-// MOBILE LIST
-// =========================
-function generateList(type="all"){
-  const wrapper=$("#list-wrapper");
-  wrapper.innerHTML="";
-  days.forEach((day,i)=>{
-    const dayCard=document.createElement("div");
-    dayCard.className="day-card";
-    const dayTitle=document.createElement("div");
-    dayTitle.className="font-semibold mb-2";
-    dayTitle.textContent=day.charAt(0).toUpperCase()+day.slice(1);
-    dayCard.appendChild(dayTitle);
-
-    const events=scheduleData.filter(e=>e.day===i && (type==="all"||e.type===type));
-    events.forEach(e=>{
-      const row=document.createElement("div");
-      row.className="event-row schedule-item";
-      row.innerHTML=`<span>${e.icon}</span> ${e.title} (${e.start}-${e.end})`;
-      row.onclick=()=>showDetail(e);
-      dayCard.appendChild(row);
-    });
-
-    if(events.length===0) dayCard.classList.add("hidden");
-    wrapper.appendChild(dayCard);
-  });
+function filterSchedule(type) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === type));
+  generateGrid(type);
 }
 
-// =========================
-// SHOW DETAIL
-// =========================
-function showDetail(item){
-  const $detail=$("#detail-content");
-  $detail.innerHTML=`
-    <div><strong>${item.icon} ${item.title}</strong></div>
-    <div>Hora: ${item.start} - ${item.end}</div>
-    <div>Tipo: ${item.type}</div>
-  `;
+function toggleDarkMode() {
+  document.documentElement.classList.toggle('dark');
+  localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
 }
 
-// =========================
-// FILTER
-// =========================
-function filterSchedule(type){
-  $$(".filter-btn").forEach(btn=>btn.classList.remove("active"));
-  $(`.filter-btn[data-filter="${type}"]`)?.classList.add("active");
-
-  if(window.innerWidth>=768) generateGrid(type);
-  else generateList(type);
-}
-
-// =========================
-// DARK MODE
-// =========================
-function toggleDarkMode(){
-  document.documentElement.classList.toggle("dark");
-  const on = document.documentElement.classList.contains("dark");
-  $("#darkToggle").setAttribute("aria-pressed",on);
-  localStorage.theme = on?"dark":"light";
-}
-
-// =========================
-// SCROLL TO SECTION
-// =========================
-function scrollToSection(id){
-  document.getElementById(id).scrollIntoView({behavior:"smooth"});
-}
-
-// =========================
-// CHART
-// =========================
-function renderChart(){
-  const ctx=$("#balanceChart").getContext("2d");
-  const counts={academic:0,art:0,study:0,life:0};
-  scheduleData.forEach(e=>{
-    counts[e.type]=(counts[e.type]||0)+((toMinutes(e.end)-toMinutes(e.start))/60);
-  });
-
-  new Chart(ctx,{
-    type:"doughnut",
-    data:{
-      labels:["Académico","Arte","Estudio","Vida"],
-      datasets:[{data:Object.values(counts),
-                 backgroundColor:["#60a5fa","#f472b6","#34d399","#fb923c"]}]
+// Inicialización
+window.onload = () => {
+  if (localStorage.theme === 'dark') document.documentElement.classList.add('dark');
+  generateGrid();
+  
+  // Render Chart
+  const ctx = document.getElementById('balanceChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Académico', 'Arte', 'Estudio', 'Vida'],
+      datasets: [{
+        data: [70, 10, 10, 10],
+        backgroundColor: ['#3b82f6', '#f472b6', '#10b981', '#f59e0b'],
+        borderWidth: 0,
+        hoverOffset: 10
+      }]
     },
-    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:"bottom"}}}
+    options: {
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } }
+    }
   });
-}
 
-// =========================
-// RESPONSIVE RENDER
-// =========================
-function renderAll(){
-  if(window.innerWidth<768) generateList($(".filter-btn.active")?.dataset.filter||"all");
-  else generateGrid($(".filter-btn.active")?.dataset.filter||"all");
-  renderChart();
-  adjustBodyHeight();
-}
-
-// =========================
-// ADJUST BODY HEIGHT
-// =========================
-function adjustBodyHeight(){
-  const mainHeight = document.querySelector("main").offsetHeight;
-  const vh = window.innerHeight;
-  if(mainHeight<vh) document.body.style.minHeight=`${vh}px`;
-  else document.body.style.minHeight="100%";
-}
-
-// =========================
-// INIT
-// =========================
-window.addEventListener("DOMContentLoaded",()=>{
-  if(localStorage.theme==="dark" || (!localStorage.theme && window.matchMedia("(prefers-color-scheme: dark)").matches)){
-    document.documentElement.classList.add("dark");
-    $("#darkToggle").setAttribute("aria-pressed","true");
-  }
-
-  renderAll();
-
-  $("#darkToggle").addEventListener("click",toggleDarkMode);
-});
-
-window.addEventListener("resize",()=>{
-  clearTimeout(window._resizeTimeout);
-  window._resizeTimeout=setTimeout(renderAll,120);
-});
+  document.getElementById('darkToggle').onclick = toggleDarkMode;
+};
