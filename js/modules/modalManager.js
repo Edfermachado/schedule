@@ -177,23 +177,32 @@ function showNotification(message, type = 'success') {
 /**
  * Inicializa los listeners del modal
  */
+
+/**
+ * Inicializa los listeners del modal
+ */
 export function initModalListeners() {
   const form = document.getElementById('activityForm');
   const closeBtn = document.getElementById('closeModal');
+  const cancelBtn = document.getElementById('cancelBtn');
   const modalBg = document.getElementById('modalBg');
-  
+
   if (form) {
     form.addEventListener('submit', handleFormSubmit);
   }
-  
+
   if (closeBtn) {
     closeBtn.addEventListener('click', closeModal);
   }
-  
+
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', closeModal);
+  }
+
   if (modalBg) {
     modalBg.addEventListener('click', closeModal);
   }
-  
+
   // Cerrar con tecla Escape
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {

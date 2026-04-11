@@ -92,8 +92,26 @@ function initGlobalListeners() {
   
   window.filterSchedule = applyFilter;
   window.toggleEmptyRows = toggleCompactMode;
+  
+  // Listener para botón de nueva actividad
+  const addBtn = document.getElementById('addActivityBtn');
+  if (addBtn) {
+    addBtn.addEventListener('click', () => openModal(null));
+  }
+  
+  // Listener para botón de tema
+  const themeBtn = document.getElementById('darkToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+      const icon = themeBtn.querySelector('i');
+      if (icon) {
+        icon.classList.toggle('fa-moon');
+        icon.classList.toggle('fa-sun');
+      }
+    });
+  }
 }
-
 /**
  * Inicializa los filtros de categoría
  */
