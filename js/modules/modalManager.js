@@ -10,11 +10,18 @@ import {
   hasTimeConflict,
   getActivityById 
 } from './dataManager.js';
-import { renderAll } from '../app.js';
 import { updateChart } from './chartManager.js';
 import { showDefaultMessage } from './detailPanel.js';
 
 let currentEditingId = null;
+let renderAllCallback = null;
+
+/**
+ * Establece la función de renderizado (para evitar importación circular)
+ */
+export function setRenderAllCallback(callback) {
+  renderAllCallback = callback;
+}
 
 /**
  * Abre el modal para agregar/editar actividad
@@ -115,7 +122,7 @@ export function handleFormSubmit(event) {
   
   // Cerrar modal y actualizar UI
   closeModal();
-  renderAll();
+  if (renderAllCallback) renderAllCallback();
   updateChart();
   showDefaultMessage();
   
@@ -129,7 +136,7 @@ export function handleFormSubmit(event) {
 export function confirmDelete(activityId) {
   if (confirm('¿Estás seguro de que deseas eliminar esta actividad?')) {
     deleteActivity(activityId);
-    renderAll();
+    if (renderAllCallback) renderAllCallback();
     updateChart();
     showDefaultMessage();
     showNotification('Actividad eliminada', 'error');

@@ -7,7 +7,7 @@ import { loadActivities } from './modules/dataManager.js';
 import { renderMobileView, renderGridView, getDayLabels } from './modules/calendarRenderer.js';
 import { initChart, updateChart } from './modules/chartManager.js';
 import { showActivityDetail, showDefaultMessage } from './modules/detailPanel.js';
-import { openModal, closeModal, confirmDelete, initModalListeners } from './modules/modalManager.js';
+import { openModal, closeModal, confirmDelete, initModalListeners, setRenderAllCallback } from './modules/modalManager.js';
 import { initTheme, initThemeButton } from './modules/themeManager.js';
 
 // Estado de la aplicación
@@ -125,6 +125,9 @@ export function initApp() {
   
   // Cargar datos iniciales
   loadActivities();
+  
+  // Establecer callback para evitar importación circular
+  setRenderAllCallback(renderAll);
   
   // Renderizar vista inicial
   renderAll();
