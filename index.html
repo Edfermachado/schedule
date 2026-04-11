@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body class="antialiased min-h-screen">
-
+  
   <header class="sticky top-0 z-40 px-4 pt-4">
     <div class="max-w-7xl mx-auto glass-nav flex items-center justify-between px-6 py-3">
       <div class="flex items-center gap-3">
@@ -24,20 +24,23 @@
       </div>
 
       <div class="flex items-center gap-2">
+        <button id="addActivityBtn" class="nav-btn-icon bg-green-500 hover:bg-green-600 text-white border-none" title="Nueva Actividad" onclick="openNewActivityModal()">
+          <i class="fas fa-plus"></i>
+        </button>
         <button id="darkToggle" class="nav-btn-icon" title="Cambiar Tema">
           <i class="fas fa-moon"></i>
         </button>
       </div>
     </div>
   </header>
-
+  
   <main class="max-w-6xl mx-auto px-4 py-8">
     <div class="flex gap-2 overflow-x-auto pb-4 no-scrollbar items-center mb-6">
-      <button class="filter-btn active" data-filter="all" onclick="filterSchedule('all')">Todo</button>
-      <button class="filter-btn academic" data-filter="academic" onclick="filterSchedule('academic')">Académico</button>
-      <button class="filter-btn art" data-filter="art" onclick="filterSchedule('art')">Arte</button>
-      <button class="filter-btn study" data-filter="study" onclick="filterSchedule('study')">Estudio</button>
-      <button class="filter-btn life" data-filter="life" onclick="filterSchedule('life')">Vida</button>
+      <button class="filter-btn active" data-filter="all">Todo</button>
+      <button class="filter-btn academic" data-filter="academic">Académico</button>
+      <button class="filter-btn art" data-filter="art">Arte</button>
+      <button class="filter-btn study" data-filter="study">Estudio</button>
+      <button class="filter-btn life" data-filter="life">Vida</button>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -48,7 +51,7 @@
             <h3 class="font-bold flex items-center gap-2">
               <i class="fas fa-columns text-blue-400"></i> Horario Semanal
             </h3>
-            <button id="minimizeBtn" class="text-xs font-bold uppercase tracking-wider opacity-60 hover:opacity-100 transition" onclick="toggleEmptyRows()">
+            <button id="minimizeBtn" class="text-xs font-bold uppercase tracking-wider opacity-60 hover:opacity-100 transition">
               <i class="fas fa-compress-alt mr-1"></i> Compactar
             </button>
           </div>
@@ -91,6 +94,102 @@
     </div>
   </main>
 
-  <script src="script.js"></script>
+  <!-- Modal para Agregar/Editar Actividad -->
+  <div id="activityModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div id="modalBg" class="absolute inset-0"></div>
+    <div class="glass rounded-2xl p-6 w-full max-w-md relative z-10 animate-scale-in">
+      <div class="flex justify-between items-center mb-6">
+        <h2 id="modalTitle" class="text-xl font-bold">Nueva Actividad</h2>
+        <button id="closeModal" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <form id="activityForm" class="space-y-4">
+        <div id="formError" class="hidden bg-red-500/20 text-red-400 text-sm p-3 rounded-lg"></div>
+        
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider opacity-60 mb-1">Título *</label>
+          <input type="text" id="actTitle" required class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500 transition" placeholder="Ej: Matemáticas">
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider opacity-60 mb-1">Día</label>
+            <select id="actDay" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500 transition">
+              <option value="0">Domingo</option>
+              <option value="1">Lunes</option>
+              <option value="2">Martes</option>
+              <option value="3">Miércoles</option>
+              <option value="4">Jueves</option>
+              <option value="5">Viernes</option>
+              <option value="6">Sábado</option>
+            </select>
+          </div>
+          
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider opacity-60 mb-1">Tipo</label>
+            <select id="actType" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500 transition">
+              <option value="academic">Académico</option>
+              <option value="art">Arte</option>
+              <option value="study">Estudio</option>
+              <option value="life">Vida</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider opacity-60 mb-1">Hora Inicio *</label>
+            <input type="time" id="actStart" required class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500 transition">
+          </div>
+          
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider opacity-60 mb-1">Hora Fin *</label>
+            <input type="time" id="actEnd" required class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500 transition">
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider opacity-60 mb-1">Ícono</label>
+            <select id="actIcon" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500 transition">
+              <option value="📚">📚 Libro</option>
+              <option value="💻">💻 Computadora</option>
+              <option value="🎭">🎭 Teatro</option>
+              <option value="🎨">🎨 Arte</option>
+              <option value="📖">📖 Estudio</option>
+              <option value="🏠">🏠 Casa</option>
+              <option value="⚽">⚽ Deporte</option>
+              <option value="🎵">🎵 Música</option>
+              <option value="🔢">🔢 Matemáticas</option>
+              <option value="🇬🇧">🇬🇧 Inglés</option>
+              <option value="🌐">🌐 Redes</option>
+              <option value="📝">📝 Notas</option>
+            </select>
+          </div>
+          
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider opacity-60 mb-1">Color</label>
+            <div class="flex items-center gap-2 h-[42px]">
+              <span class="text-xs opacity-60">Auto (según tipo)</span>
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider opacity-60 mb-1">Descripción</label>
+          <textarea id="actDesc" rows="2" class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500 transition resize-none" placeholder="Detalles adicionales..."></textarea>
+        </div>
+        
+        <div class="flex gap-3 pt-4">
+          <button type="button" onclick="closeModal()" class="flex-1 bg-white/10 hover:bg-white/20 py-2 px-4 rounded-lg font-bold transition">Cancelar</button>
+          <button type="submit" class="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white py-2 px-4 rounded-lg font-bold transition shadow-lg">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="js/app.js"></script>
 </body>
 </html>
