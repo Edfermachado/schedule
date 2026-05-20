@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Planificador Semanal — Glass Edition</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
@@ -15,29 +20,29 @@
     <div class="max-w-7xl mx-auto glass-nav flex items-center justify-between px-6 py-3">
       <div class="flex items-center gap-3">
         <div class="bg-gradient-to-br from-blue-500 to-purple-600 p-2 rounded-xl shadow-lg">
-          <i class="fas fa-calendar-alt text-white text-xl"></i>
+          <i class="fas fa-calendar-alt text-white text-xl" aria-hidden="true"></i>
         </div>
         <div>
-          <h1 class="text-lg font-bold tracking-tight leading-none">Mi Agenda</h1>
-          <span class="text-[10px] uppercase tracking-widest opacity-50 font-bold">Glass UI v2.0</span>
+          <h1 class="text-lg font-bold tracking-tight leading-none text-[var(--text)]">Mi Agenda</h1>
+          <span class="text-[10px] uppercase tracking-widest text-[var(--text-soft)] font-bold">Glass UI v2.0</span>
         </div>
       </div>
 
       <div class="flex items-center gap-2">
-        <button id="darkToggle" class="nav-btn-icon" title="Cambiar Tema">
-          <i class="fas fa-moon"></i>
+        <button id="darkToggle" class="nav-btn-icon" title="Cambiar Tema" aria-label="Cambiar tema oscuro/claro">
+          <i class="fas fa-moon" aria-hidden="true"></i>
         </button>
       </div>
     </div>
   </header>
 
   <main class="max-w-6xl mx-auto px-4 py-8">
-    <div class="flex gap-2 overflow-x-auto pb-4 no-scrollbar items-center mb-6">
-      <button class="filter-btn active" data-filter="all" onclick="filterSchedule('all')">Todo</button>
-      <button class="filter-btn academic" data-filter="academic" onclick="filterSchedule('academic')">Académico</button>
-      <button class="filter-btn art" data-filter="art" onclick="filterSchedule('art')">Arte</button>
-      <button class="filter-btn study" data-filter="study" onclick="filterSchedule('study')">Estudio</button>
-      <button class="filter-btn life" data-filter="life" onclick="filterSchedule('life')">Vida</button>
+    <div class="flex gap-2 overflow-x-auto pb-4 no-scrollbar items-center mb-6" role="tablist" aria-label="Filtros de categorías">
+      <button class="filter-btn active" data-filter="all" onclick="filterSchedule('all')" role="tab" aria-selected="true">Todo</button>
+      <button class="filter-btn academic" data-filter="academic" onclick="filterSchedule('academic')" role="tab" aria-selected="false">Académico</button>
+      <button class="filter-btn art" data-filter="art" onclick="filterSchedule('art')" role="tab" aria-selected="false">Arte</button>
+      <button class="filter-btn study" data-filter="study" onclick="filterSchedule('study')" role="tab" aria-selected="false">Estudio</button>
+      <button class="filter-btn life" data-filter="life" onclick="filterSchedule('life')" role="tab" aria-selected="false">Vida</button>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -45,11 +50,11 @@
       <div class="lg:col-span-3">
         <div class="section-card glass overflow-hidden">
           <div class="p-4 border-b border-white/10 flex justify-between items-center bg-white/5">
-            <h3 class="font-bold flex items-center gap-2">
-              <i class="fas fa-columns text-blue-400"></i> Horario Semanal
+            <h3 class="font-bold flex items-center gap-2 text-[var(--text)]">
+              <i class="fas fa-columns text-blue-400" aria-hidden="true"></i> Horario Semanal
             </h3>
-            <button id="minimizeBtn" class="text-xs font-bold uppercase tracking-wider opacity-60 hover:opacity-100 transition" onclick="toggleEmptyRows()">
-              <i class="fas fa-compress-alt mr-1"></i> Compactar
+            <button id="minimizeBtn" class="text-xs font-bold uppercase tracking-wider opacity-80 hover:opacity-100 transition focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2 py-1" onclick="toggleEmptyRows()" aria-label="Compactar filas vacías">
+              <i class="fas fa-compress-alt mr-1" aria-hidden="true"></i> Compactar
             </button>
           </div>
 
@@ -74,16 +79,16 @@
 
       <aside class="space-y-6">
         <div class="section-card glass p-6 sticky top-24">
-          <h3 class="text-sm font-bold uppercase tracking-widest opacity-50 mb-4 text-center">Detalles</h3>
-          <div id="detail-content" class="min-h-[100px] flex flex-col justify-center items-center text-center italic opacity-60 text-sm px-4">
+          <h3 class="text-sm font-bold uppercase tracking-widest text-[var(--text-soft)] mb-4 text-center">Detalles</h3>
+          <div id="detail-content" class="min-h-[100px] flex flex-col justify-center items-center text-center italic text-[var(--text-soft)] text-sm px-4" aria-live="polite">
             Toca una actividad para ver información detallada
           </div>
           
-          <hr class="my-6 border-white/10">
+          <hr class="my-6 border-[var(--border)]">
           
-          <h3 class="text-sm font-bold uppercase tracking-widest opacity-50 mb-4 text-center">Distribución</h3>
+          <h3 class="text-sm font-bold uppercase tracking-widest text-[var(--text-soft)] mb-4 text-center">Distribución</h3>
           <div class="relative h-48">
-            <canvas id="balanceChart"></canvas>
+            <canvas id="balanceChart" aria-label="Gráfico de distribución del tiempo" role="img"></canvas>
           </div>
         </div>
       </aside>
